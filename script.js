@@ -1,3 +1,8 @@
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1']);
+const API_BASE_URL = LOCAL_HOSTNAMES.has(window.location.hostname)
+  ? ''
+  : 'https://ilsiyar-api.onrender.com';
+
 const SITE_CONFIG = {
   expertName: "Ильсияр Тухватшина",
   phoneDisplay: "8 937 484-85-65",
@@ -11,7 +16,7 @@ const SITE_CONFIG = {
   portraitAlt: "Ильсияр Тухватшина, эксперт по недвижимости",
   agencyLogo: "", // Например: "assets/images/norma-logo.svg"
   formMode: "backend",
-  formEndpoint: "/api/lead",
+  formEndpoint: `${API_BASE_URL}/api/lead`,
 };
 
 const $ = (selector, scope = document) => scope.querySelector(selector);
