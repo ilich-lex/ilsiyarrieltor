@@ -28,6 +28,9 @@ button { color: inherit; }
 h1,h2,h3,p,ul,figure { margin: 0; }
 ul { padding: 0; list-style: none; }
 img { display: block; max-width: 100%; }
+.ui-arrow-slot { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; line-height: 0; }
+.ui-arrow { width: 16px; height: 16px; display: block; flex: 0 0 16px; overflow: visible; }
+.link-with-icon { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 ::selection { background: var(--accent); color: var(--ink); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
 .shell { width: var(--shell); margin-inline: auto; }
