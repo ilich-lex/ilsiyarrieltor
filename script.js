@@ -34,6 +34,10 @@ const money = (value) =>
   Number.isFinite(value)
     ? new Intl.NumberFormat("ru-RU").format(value) + " ₽"
     : "Цена по запросу";
+const measure = (value) =>
+  Number.isFinite(value)
+    ? new Intl.NumberFormat("ru-RU").format(value)
+    : String(value);
 const statusLabels = {
   active: "В продаже",
   reserved: "Забронировано",
@@ -222,8 +226,11 @@ function initHeader() {
         const section = document.getElementById(link.dataset.nav);
         if (!section) return;
         const top = section.getBoundingClientRect().top;
-        if (top < innerHeight * 0.43 &&
-            (top > closestTop + 1 || (Math.abs(top - closestTop) <= 1 && link === activeLink))) {
+        if (
+          top < innerHeight * 0.43 &&
+          (top > closestTop + 1 ||
+            (Math.abs(top - closestTop) <= 1 && link === activeLink))
+        ) {
           current = link;
           closestTop = top;
         }
@@ -316,6 +323,10 @@ function initWorkflow() {
       String(index + 1).padStart(2, "0") + " / 04";
     prev.disabled = index === 0;
     next.disabled = index === cards.length - 1;
+    cards.forEach((card, i) => {
+      if (i === index) card.setAttribute("aria-current", "step");
+      else card.removeAttribute("aria-current");
+    });
     $("[data-work-progress]").style.transform =
       "translateX(" + index * 100 + "%)";
   }
@@ -398,7 +409,11 @@ function propertyCard(p) {
     statusLabels[p.status] +
     '</span></div><div class="property-body"><p class="property-meta">' +
     escapeHTML(p.type) +
-    (p.area ? " · " + escapeHTML(p.area) + " м²" : "") +
+    (p.area
+      ? " · " + escapeHTML(measure(p.area)) + " м²"
+      : p.landArea
+        ? " · " + escapeHTML(measure(p.landArea)) + " сот."
+        : "") +
     "</p>" +
     "<h3>" +
     escapeHTML(p.title) +
@@ -408,7 +423,9 @@ function propertyCard(p) {
     '<div class="property-card-bottom"><span class="property-price">' +
     money(p.price) +
     "</span>" +
+    '<span class="property-more">Подробнее' +
     arrow +
+    "</span>" +
     "</div></div></a></article>"
   );
 }
@@ -561,10 +578,10 @@ function initProperty(properties) {
   const photos = p.photos;
   const specs = [
     ["Тип", p.type],
-    ["Площадь", p.area ? p.area + " м²" : null],
+    ["Площадь", p.area ? measure(p.area) + " м²" : null],
     ["Комнаты", p.rooms],
     ["Этаж", p.floor],
-    ["Участок", p.landArea ? p.landArea + " сот." : null],
+    ["Участок", p.landArea ? measure(p.landArea) + " сот." : null],
     ["Статус", statusLabels[p.status]],
   ].filter(([, v]) => v != null && v !== "");
   target.innerHTML =
