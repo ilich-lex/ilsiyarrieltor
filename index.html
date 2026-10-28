@@ -366,7 +366,7 @@
       <section class="section about-section" id="about">
         <div class="shell about-layout" data-reveal-group>
           <div class="about-image-column" data-reveal-child>
-            <p class="section-kicker">Лично о работе</p>
+            <p class="section-kicker">Личный подход к вашей задаче</p>
             <figure class="about-portrait">
               <img
                 src="assets/images/photo_2026-08-23_15-43-49.jpg"
@@ -384,19 +384,27 @@
             <p class="section-kicker">Эксперт по недвижимости</p>
             <h2>Ильсияр<br />Тухватшина</h2>
             <p class="about-intro">
-              Работа начинается с вашей задачи.<br />И продолжается до
-              завершения сделки.
+              Лично веду покупку или продажу — от первого разговора до
+              оформления сделки.
             </p>
-            <p>
-              Помогаю покупать и продавать квартиры, дома, участки и
-              коммерческую недвижимость. Обсуждаем ваши требования, бюджет и
-              обстоятельства — затем определяем порядок действий.
-            </p>
-            <p>
-              Подбираю предложения или готовлю объект к продаже, веду переговоры
-              и координирую участников. При необходимости подключаю ипотечного
-              брокера и юридических специалистов.
-            </p>
+            <div class="about-details">
+              <div>
+                <h3>Сначала — ваша ситуация</h3>
+                <p>
+                  Обсуждаем задачу, бюджет и обстоятельства. Работаю с
+                  квартирами, домами, участками и коммерческой недвижимостью по
+                  России.
+                </p>
+              </div>
+              <div>
+                <h3>Затем — конкретные действия</h3>
+                <p>
+                  Подбираю предложения или готовлю объект к продаже. Веду
+                  переговоры, координирую участников, при необходимости
+                  подключаю брокера и юристов.
+                </p>
+              </div>
+            </div>
             <div class="about-bottom">
               <a class="button button-light" href="#contact"
                 >Обсудить мою ситуацию
@@ -478,16 +486,15 @@
               </button>
             </div>
           </div>
-          <div class="workflow-stage" data-workflow>
+          <div class="workflow-stage" data-workflow data-reveal-workflow>
             <div
               class="workflow-tabs"
-              role="tablist"
+              role="group"
               aria-label="Этапы работы"
               hidden
             >
               <button
                 type="button"
-                role="tab"
                 id="work-tab-0"
                 aria-controls="work-panel-0"
                 data-work-tab="0"
@@ -495,7 +502,6 @@
                 <span>01</span>Обращение</button
               ><button
                 type="button"
-                role="tab"
                 id="work-tab-1"
                 aria-controls="work-panel-1"
                 data-work-tab="1"
@@ -503,7 +509,6 @@
                 <span>02</span>Задача</button
               ><button
                 type="button"
-                role="tab"
                 id="work-tab-2"
                 aria-controls="work-panel-2"
                 data-work-tab="2"
@@ -511,7 +516,6 @@
                 <span>03</span>Объект</button
               ><button
                 type="button"
-                role="tab"
                 id="work-tab-3"
                 aria-controls="work-panel-3"
                 data-work-tab="3"
@@ -519,80 +523,76 @@
                 <span>04</span>Сделка
               </button>
             </div>
-            <div class="workflow-panels">
-              <article
-                class="workflow-panel"
-                id="work-panel-0"
-                role="tabpanel"
-                aria-labelledby="work-tab-0"
-                tabindex="0"
-              >
-                <span class="step-number" aria-hidden="true">01</span>
-                <div class="step-content">
-                  <p class="step-eyebrow">Этап 1 из 4</p>
-                  <h3>Первое обращение</h3>
-                  <p>
-                    Обсуждаем, какую недвижимость вы хотите купить или продать.
-                    Уточняем город, сроки и исходную ситуацию.
-                  </p>
-                  <span class="step-note">Знакомимся и определяем запрос</span>
-                </div>
-              </article>
-              <article
-                class="workflow-panel"
-                id="work-panel-1"
-                role="tabpanel"
-                aria-labelledby="work-tab-1"
-                tabindex="0"
-              >
-                <span class="step-number" aria-hidden="true">02</span>
-                <div class="step-content">
-                  <p class="step-eyebrow">Этап 2 из 4</p>
-                  <h3>Согласование задачи</h3>
-                  <p>
-                    Определяем требования к объекту или условия продажи.
-                    Обсуждаем бюджет, порядок действий и формат сопровождения.
-                  </p>
-                  <span class="step-note">Фиксируем договорённости</span>
-                </div>
-              </article>
-              <article
-                class="workflow-panel"
-                id="work-panel-2"
-                role="tabpanel"
-                aria-labelledby="work-tab-2"
-                tabindex="0"
-              >
-                <span class="step-number" aria-hidden="true">03</span>
-                <div class="step-content">
-                  <p class="step-eyebrow">Этап 3 из 4</p>
-                  <h3>Работа с объектом</h3>
-                  <p>
-                    Подбираем и сравниваем предложения или готовим объект к
-                    продаже. Организуем просмотры и обсуждаем условия с
-                    участниками.
-                  </p>
-                  <span class="step-note">Подбор, показы и переговоры</span>
-                </div>
-              </article>
-              <article
-                class="workflow-panel"
-                id="work-panel-3"
-                role="tabpanel"
-                aria-labelledby="work-tab-3"
-                tabindex="0"
-              >
-                <span class="step-number" aria-hidden="true">04</span>
-                <div class="step-content">
-                  <p class="step-eyebrow">Этап 4 из 4</p>
-                  <h3>Подготовка и сопровождение сделки</h3>
-                  <p>
-                    Согласовываем документы и порядок оформления. Координируем
-                    участников и сопровождаем завершение сделки.
-                  </p>
-                  <span class="step-note">Документы и оформление</span>
-                </div>
-              </article>
+            <div class="workflow-window">
+              <div class="workflow-panels">
+                <article
+                  class="workflow-panel"
+                  id="work-panel-0"
+                  role="group"
+                  aria-labelledby="work-tab-0"
+                >
+                  <span class="step-number" aria-hidden="true">01</span>
+                  <div class="step-content">
+                    <h3>Первое обращение</h3>
+                    <p>
+                      Обсуждаем, какую недвижимость вы хотите купить или
+                      продать. Уточняем город, сроки и исходную ситуацию.
+                    </p>
+                    <span class="step-note"
+                      >Знакомимся и определяем запрос</span
+                    >
+                  </div>
+                </article>
+                <article
+                  class="workflow-panel"
+                  id="work-panel-1"
+                  role="group"
+                  aria-labelledby="work-tab-1"
+                >
+                  <span class="step-number" aria-hidden="true">02</span>
+                  <div class="step-content">
+                    <h3>Согласование задачи</h3>
+                    <p>
+                      Определяем требования к объекту или условия продажи.
+                      Обсуждаем бюджет, порядок действий и формат сопровождения.
+                    </p>
+                    <span class="step-note">Фиксируем договорённости</span>
+                  </div>
+                </article>
+                <article
+                  class="workflow-panel"
+                  id="work-panel-2"
+                  role="group"
+                  aria-labelledby="work-tab-2"
+                >
+                  <span class="step-number" aria-hidden="true">03</span>
+                  <div class="step-content">
+                    <h3>Работа с объектом</h3>
+                    <p>
+                      Подбираем и сравниваем предложения или готовим объект к
+                      продаже. Организуем просмотры и обсуждаем условия с
+                      участниками.
+                    </p>
+                    <span class="step-note">Подбор, показы и переговоры</span>
+                  </div>
+                </article>
+                <article
+                  class="workflow-panel"
+                  id="work-panel-3"
+                  role="group"
+                  aria-labelledby="work-tab-3"
+                >
+                  <span class="step-number" aria-hidden="true">04</span>
+                  <div class="step-content">
+                    <h3>Сопровождение сделки</h3>
+                    <p>
+                      Согласовываем документы и порядок оформления. Координируем
+                      участников и сопровождаем завершение сделки.
+                    </p>
+                    <span class="step-note">Документы и оформление</span>
+                  </div>
+                </article>
+              </div>
             </div>
             <div class="workflow-progress" aria-hidden="true">
               <span data-work-progress></span>
@@ -618,16 +618,16 @@
               <span class="service-indicator" aria-hidden="true"></span
               ><button
                 type="button"
-                role="tab"
                 id="service-tab-buy"
+                role="tab"
                 aria-controls="service-buy"
                 data-service-tab="buy"
               >
                 Покупаю</button
               ><button
                 type="button"
-                role="tab"
                 id="service-tab-sell"
+                role="tab"
                 aria-controls="service-sell"
                 data-service-tab="sell"
               >
@@ -705,8 +705,8 @@
               <div class="service-copy">
                 <h3>Продажа недвижимости</h3>
                 <p>
-                  Обсуждаем объект и рынок. Готовим подачу, работаем с
-                  обращениями и сопровождаем продажу.
+                  Обсуждаем объект и рынок. Готовим материалы для размещения,
+                  работаем с обращениями и сопровождаем продажу.
                 </p>
                 <a
                   class="button button-dark"
@@ -744,7 +744,9 @@
                   <span>02</span>
                   <div>
                     <h4>Подготовка и показы</h4>
-                    <p>Подготовим подачу, организуем обращения и показы.</p>
+                    <p>
+                      Подготовим материалы для размещения, организуем показы.
+                    </p>
                   </div>
                 </li>
                 <li>

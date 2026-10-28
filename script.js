@@ -263,8 +263,8 @@ function initHeader() {
       opacity: 1,
     };
     pillAnimation = animate(pill, props, {
-      duration: 0.34,
-      ease: [0.19, 1, 0.22, 1],
+      duration: 0.38,
+      ease: [0.16, 1, 0.3, 1],
     });
     if (!pillAnimation) Object.assign(pill.style, props);
   }
@@ -384,7 +384,34 @@ function initReveals() {
     (entries) => {
       entries.forEach(({ target, isIntersecting }) => {
         if (!isIntersecting) return;
-        if (target.hasAttribute("data-reveal-group")) {
+        if (target.hasAttribute("data-reveal-workflow")) {
+          $$(".workflow-panel", target).forEach((card, i) => {
+            const reveal = animate(
+              card,
+              {
+                opacity: [0.35, 1],
+                transform: ["translateY(28px)", "translateY(0)"],
+              },
+              { duration: 0.6, delay: i * 0.065 },
+            );
+            reveal?.then(() =>
+              requestAnimationFrame(() => {
+                card.style.transform = "";
+                card.style.opacity = "";
+              }),
+            );
+          });
+        } else if (target.hasAttribute("data-reveal-group")) {
+          animate(
+            $(".about-portrait", target),
+            {
+              clipPath: [
+                "inset(0 0 9% 0 round 16px)",
+                "inset(0 0 0 0 round 16px)",
+              ],
+            },
+            { duration: 0.8 },
+          );
           $$("[data-reveal-child]", target).forEach((child, i) =>
             animate(
               child,
@@ -395,7 +422,7 @@ function initReveals() {
                   "translate(0,0)",
                 ],
               },
-              { duration: 0.6, delay: i * 0.09 },
+              { duration: 0.7, delay: i * 0.12 },
             ),
           );
         } else
@@ -403,16 +430,18 @@ function initReveals() {
             target,
             {
               opacity: [0.2, 1],
-              transform: ["translateY(22px)", "translateY(0)"],
+              transform: ["translateY(28px)", "translateY(0)"],
             },
-            { duration: 0.55 },
+            { duration: 0.65 },
           );
         observer.unobserve(target);
       });
     },
     { threshold: 0.16 },
   );
-  $$("[data-reveal],[data-reveal-group]").forEach((el) => observer.observe(el));
+  $$("[data-reveal],[data-reveal-group],[data-reveal-workflow]").forEach((el) =>
+    observer.observe(el),
+  );
 }
 
 function initWorkflow() {
@@ -420,80 +449,98 @@ function initWorkflow() {
   if (!stage) return;
   const panels = $$(".workflow-panel", stage),
     tabs = $$("[data-work-tab]", stage),
+    track = $(".workflow-panels", stage),
     prev = $("[data-work-prev]"),
-    next = $("[data-work-next]");
+    next = $("[data-work-next]"),
+    counter = $("[data-work-counter]"),
+    progress = $("[data-work-progress]");
   let index = 0,
     animations = [],
-    touch = null;
+    railAnimation,
+    touch = null,
+    previousWidth = 0;
   stage.classList.add("is-enhanced");
   $(".workflow-tabs", stage).hidden = false;
   $("[data-work-controls]").hidden = false;
-  let revision = 0;
+
+  function positionRail(moving = true) {
+    const first = panels[0].offsetLeft,
+      requested = panels[index].offsetLeft - first,
+      offset = Math.max(
+        0,
+        Math.min(requested, track.scrollWidth - track.clientWidth),
+      );
+    railAnimation?.stop();
+    const target = { transform: "translateX(" + -offset + "px)" };
+    railAnimation = moving ? animate(track, target, { duration: 0.44 }) : null;
+    if (!railAnimation) Object.assign(track.style, target);
+    panels.forEach((panel) => {
+      const left = panel.offsetLeft - first;
+      const visible =
+        left + panel.offsetWidth > offset + 2 &&
+        left < offset + track.clientWidth - 2;
+      panel.inert = !visible;
+      panel.setAttribute("aria-hidden", String(!visible));
+    });
+  }
+
   function show(i, moving = true, focus = false) {
     i = Math.max(0, Math.min(panels.length - 1, i));
     if (i === index && moving) return;
-    const previous = index,
-      direction = i >= index ? 1 : -1,
-      ticket = ++revision;
+    const direction = i >= index ? 1 : -1;
     animations.forEach((a) => a?.stop());
     animations = [];
     index = i;
-    panels.forEach((panel, n) => {
-      panel.classList.remove("is-leaving");
-      panel.classList.toggle("is-active", n === i);
-      panel.style.opacity = "";
-      panel.style.transform = "";
-      panel.inert = n !== i;
-      panel.setAttribute("aria-hidden", String(n !== i));
+    // A rapid change must not leave a still-visible neighbouring card faded.
+    requestAnimationFrame(() => {
+      panels.forEach((panel, n) => {
+        if (n === index) return;
+        $$(".step-content,.step-number", panel).forEach((el) => {
+          el.style.opacity = "";
+          el.style.transform = "";
+        });
+      });
     });
+    panels.forEach((panel, n) => panel.classList.toggle("is-active", n === i));
     tabs.forEach((tab, n) => {
-      tab.setAttribute("aria-selected", String(n === i));
-      tab.tabIndex = n === i ? 0 : -1;
+      tab.setAttribute("aria-pressed", String(n === i));
+      if (n === i) tab.setAttribute("aria-current", "step");
+      else tab.removeAttribute("aria-current");
     });
     prev.disabled = i === 0;
     next.disabled = i === panels.length - 1;
-    const counter = $("[data-work-counter]"),
-      progress = $("[data-work-progress]");
     counter.textContent = String(i + 1).padStart(2, "0") + " / 04";
     const progressMotion = animate(
       progress,
       { width: (i + 1) * 25 + "%" },
-      { duration: 0.4 },
+      { duration: 0.42 },
     );
     if (progressMotion) animations.push(progressMotion);
     else progress.style.width = (i + 1) * 25 + "%";
+    positionRail(moving);
     if (focus) tabs[i].focus({ preventScroll: true });
-    if (
-      moving &&
-      !reducedMotion.matches &&
-      typeof window.Motion?.animate === "function"
-    ) {
-      const outgoing = panels[previous],
-        incoming = panels[i];
-      outgoing.classList.add("is-leaving");
-      const exit = animate(
-        outgoing,
-        {
-          opacity: [1, 0],
-          transform: ["translateX(0)", "translateX(" + -direction * 24 + "px)"],
-        },
-        { duration: 0.16, ease: [0.4, 0, 1, 1] },
-      );
-      animations.push(exit);
-      exit?.then(() => {
-        if (ticket === revision) outgoing.classList.remove("is-leaving");
-      });
+    if (moving) {
       animations.push(
         animate(
-          incoming,
+          $(".step-content", panels[i]),
           {
-            opacity: [0, 1],
+            opacity: [0.45, 1],
             transform: [
-              "translateX(" + direction * 32 + "px)",
+              "translateX(" + direction * 14 + "px)",
               "translateX(0)",
             ],
           },
-          { duration: 0.28, delay: 0.14 },
+          { duration: 0.42 },
+        ),
+      );
+      animations.push(
+        animate(
+          $(".step-number", panels[i]),
+          {
+            opacity: [0.5, 1],
+            transform: ["translateY(10px)", "translateY(0)"],
+          },
+          { duration: 0.38 },
         ),
       );
       animations.push(
@@ -503,7 +550,7 @@ function initWorkflow() {
             opacity: [0.35, 1],
             transform: ["translateY(6px)", "translateY(0)"],
           },
-          { duration: 0.28 },
+          { duration: 0.3 },
         ),
       );
     }
@@ -520,7 +567,7 @@ function initWorkflow() {
     };
     if (Object.hasOwn(map, e.key)) {
       e.preventDefault();
-      show(map[e.key], true, e.target.matches("[role=tab]"));
+      show(map[e.key], true, e.target.matches("[data-work-tab]"));
     }
   });
   stage.addEventListener(
@@ -545,8 +592,25 @@ function initWorkflow() {
     },
     { passive: true },
   );
+  stage.addEventListener(
+    "touchcancel",
+    () => {
+      touch = null;
+    },
+    { passive: true },
+  );
+  if ("ResizeObserver" in window)
+    new ResizeObserver(() => {
+      if (previousWidth !== track.clientWidth) {
+        previousWidth = track.clientWidth;
+        positionRail(false);
+      }
+    }).observe(track);
+  else addEventListener("resize", () => positionRail(false));
+  document.fonts.ready.then(() => positionRail(false));
   show(0, false);
 }
+
 let selectService = null;
 function initServices() {
   const group = $(".service-panels");
