@@ -231,6 +231,7 @@ async def create_lead(lead: LeadPayload, request: Request) -> dict[str, bool]:
 
 
 @app.get("/", include_in_schema=False)
+@app.get("/index.html", include_in_schema=False)
 async def index() -> FileResponse:
     return FileResponse(BASE_DIR / "index.html")
 
@@ -238,6 +239,16 @@ async def index() -> FileResponse:
 @app.get("/styles.css", include_in_schema=False)
 async def styles() -> FileResponse:
     return FileResponse(BASE_DIR / "styles.css", media_type="text/css")
+
+
+@app.get("/objects.html", include_in_schema=False)
+async def objects_page() -> FileResponse:
+    return FileResponse(BASE_DIR / "objects.html")
+
+
+@app.get("/property.html", include_in_schema=False)
+async def property_page() -> FileResponse:
+    return FileResponse(BASE_DIR / "property.html")
 
 
 @app.get("/script.js", include_in_schema=False)
