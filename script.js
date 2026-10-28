@@ -51,7 +51,12 @@ if (!/^[a-z0-9-]{1,80}$/.test(inquiryPropertyId || ""))
 let lastSuccessInMemory = 0;
 
 function animate(element, keyframes, options = {}) {
-  if (reducedMotion.matches || !window.Motion || !element) return null;
+  if (
+    reducedMotion.matches ||
+    typeof window.Motion?.animate !== "function" ||
+    !element
+  )
+    return null;
   return Motion.animate(element, keyframes, {
     duration: 0.55,
     ease: [0.22, 1, 0.36, 1],
@@ -141,28 +146,50 @@ function applyConfig() {
 function initHeader() {
   const header = $("[data-header]"),
     toggle = $(".menu-toggle"),
-    menu = $("#mobile-menu");
-  const nav = $(".desktop-nav"),
+    menu = $("#mobile-menu"),
+    nav = $(".desktop-nav"),
     pill = $(".nav-indicator");
-  let menuAnimation, activeLink, frame;
+  let menuAnimation,
+    pillAnimation,
+    menuRevision = 0,
+    activeLink = null,
+    frame;
+  const links = $$("[data-nav]", nav);
   function setMenu(open, restore = false) {
+    const revision = ++menuRevision;
     menuAnimation?.stop();
+    const from = menu.hidden ? 0 : menu.getBoundingClientRect().height;
     toggle.setAttribute("aria-expanded", String(open));
     toggle.setAttribute("aria-label", open ? "Закрыть меню" : "Открыть меню");
-    menu.style.height = "";
-    menu.style.opacity = "";
-    menu.hidden = !open;
-    if (open) {
-      menuAnimation = animate(
-        menu,
-        { height: [0, menu.scrollHeight + "px"], opacity: [0, 1] },
-        { duration: 0.35 },
+    menu.hidden = false;
+    menu.inert = !open;
+    menu.style.height = "auto";
+    const height = menu.scrollHeight;
+    const finish = () => {
+      if (revision !== menuRevision) return;
+      menu.hidden = !open;
+      menu.style.height = "";
+      menu.style.opacity = "";
+    };
+    menuAnimation = animate(
+      menu,
+      {
+        height: [from + "px", (open ? height : 0) + "px"],
+        opacity: [open ? 0.4 : 1, open ? 1 : 0],
+      },
+      { duration: 0.36 },
+    );
+    if (menuAnimation) menuAnimation.then(finish);
+    else finish();
+    if (open)
+      $$("a:not([hidden])", menu).forEach((link, i) =>
+        animate(
+          link,
+          { opacity: [0, 1], transform: ["translateY(-9px)", "translateY(0)"] },
+          { duration: 0.3, delay: 0.06 + i * 0.025 },
+        ),
       );
-      menuAnimation?.then(() => {
-        menu.style.height = "";
-      });
-      $("a:not([hidden])", menu)?.focus({ preventScroll: true });
-    } else if (restore) toggle.focus({ preventScroll: true });
+    if (restore) toggle.focus({ preventScroll: true });
   }
   toggle.addEventListener("click", () =>
     setMenu(toggle.getAttribute("aria-expanded") !== "true"),
@@ -171,28 +198,33 @@ function initHeader() {
     a.addEventListener("click", () => setMenu(false)),
   );
   document.addEventListener("pointerdown", (e) => {
-    if (!header.contains(e.target) && !menu.hidden) setMenu(false);
+    if (
+      !header.contains(e.target) &&
+      toggle.getAttribute("aria-expanded") === "true"
+    )
+      setMenu(false);
   });
   document.addEventListener("keydown", (e) => {
-    if (menu.hidden) return;
+    if (toggle.getAttribute("aria-expanded") !== "true") return;
     if (e.key === "Escape") {
       setMenu(false, true);
       return;
     }
     if (e.key === "Tab") {
-      const links = $$("a,button", header).filter(
-        (el) => el.getClientRects().length,
+      const visible = $$("a,button", header).filter(
+        (el) => el.getClientRects().length && !el.closest("[hidden]"),
       );
-      if (e.shiftKey && document.activeElement === links[0]) {
+      if (e.shiftKey && document.activeElement === visible[0]) {
         e.preventDefault();
-        links.at(-1).focus();
-      } else if (!e.shiftKey && document.activeElement === links.at(-1)) {
+        visible.at(-1).focus();
+      } else if (!e.shiftKey && document.activeElement === visible.at(-1)) {
         e.preventDefault();
-        links[0].focus();
+        visible[0].focus();
       }
     }
   });
   function movePill(link) {
+    pillAnimation?.stop();
     if (!link || !nav.getClientRects().length) {
       pill.style.opacity = "0";
       return;
@@ -202,37 +234,38 @@ function initHeader() {
       width: link.offsetWidth + "px",
       opacity: 1,
     };
-    if (!animate(pill, props, { duration: 0.35 }))
-      Object.assign(pill.style, props);
+    pillAnimation = animate(pill, props, { duration: 0.36 });
+    if (!pillAnimation) Object.assign(pill.style, props);
   }
-  const links = $$("[data-nav]", nav);
   links.forEach((link) => {
     link.addEventListener("pointerenter", () => movePill(link));
     link.addEventListener("focus", () => movePill(link));
-    link.addEventListener("click", () => {
-      activeLink = link;
-      movePill(link);
-    });
   });
   nav.addEventListener("pointerleave", () => movePill(activeLink));
-  nav.addEventListener("focusout", () => movePill(activeLink));
+  nav.addEventListener("focusout", (e) => {
+    if (!nav.contains(e.relatedTarget)) movePill(activeLink);
+  });
   function update() {
     frame = null;
-    header.classList.toggle("is-scrolled", scrollY > 40);
-    let current = document.body.dataset.page !== "home" ? links[0] : null;
+    header.classList.toggle("is-scrolled", scrollY > 72);
+    let current = document.body.dataset.page === "home" ? null : links[0];
     if (document.body.dataset.page === "home") {
-      let closestTop = -Infinity;
+      let last = -Infinity;
       links.forEach((link) => {
-        const section = document.getElementById(link.dataset.nav);
-        if (!section) return;
-        const top = section.getBoundingClientRect().top;
+        const id = link.dataset.nav;
         if (
-          top < innerHeight * 0.43 &&
-          (top > closestTop + 1 ||
-            (Math.abs(top - closestTop) <= 1 && link === activeLink))
-        ) {
+          ["buy", "sell"].includes(id) &&
+          id !== $(".service-tabs [aria-selected=true]")?.dataset.serviceTab
+        )
+          return;
+        const target = document.getElementById(
+          ["buy", "sell"].includes(id) ? "services" : id,
+        );
+        if (!target || target.hidden) return;
+        const top = target.getBoundingClientRect().top;
+        if (top <= Math.max(150, innerHeight * 0.32) && top > last) {
           current = link;
-          closestTop = top;
+          last = top;
         }
       });
     }
@@ -242,7 +275,8 @@ function initHeader() {
         if (l === current) l.setAttribute("aria-current", "location");
         else l.removeAttribute("aria-current");
       });
-      movePill(current);
+      if (!nav.matches(":hover") && !nav.contains(document.activeElement))
+        movePill(current);
     }
   }
   addEventListener(
@@ -253,136 +287,352 @@ function initHeader() {
     { passive: true },
   );
   addEventListener("resize", () => {
-    if (innerWidth > 900 && !menu.hidden) setMenu(false);
+    if (innerWidth > 1000 && toggle.getAttribute("aria-expanded") === "true")
+      setMenu(false);
     movePill(activeLink);
   });
+  document.addEventListener("servicechange", update);
   document.fonts.ready.then(() => movePill(activeLink));
   update();
 }
+
 function initReveals() {
-  if (reducedMotion.matches || !window.Motion) return;
+  if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
+    return;
   $$("[data-hero]").forEach((el, i) =>
     animate(
       el,
-      { opacity: [0, 1], transform: ["translateY(20px)", "translateY(0)"] },
-      { delay: Math.min(i * 0.055, 0.25), duration: 0.7 },
+      { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0)"] },
+      { delay: i * 0.075, duration: 0.7 },
     ),
   );
   animate(
     $("[data-hero-image]"),
     {
-      clipPath: ["inset(5% 0 5% 0 round 22px)", "inset(0% 0 0% 0 round 22px)"],
-      opacity: [0, 1],
+      opacity: [0.2, 1],
+      transform: ["translateY(20px) scale(.97)", "translateY(0) scale(1)"],
+      clipPath: ["inset(0 0 14% 0 round 32px)", "inset(0 0 0% 0 round 32px)"],
     },
+    { duration: 0.95, delay: 0.06 },
+  );
+  animate(
+    $(".hero-plane"),
+    { transform: ["translateX(28px)", "translateX(0)"], opacity: [0.45, 1] },
     { duration: 0.9 },
+  );
+  animate(
+    $(".portrait-caption"),
+    { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0)"] },
+    { duration: 0.45, delay: 0.45 },
   );
   if (!("IntersectionObserver" in window)) return;
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(({ target, isIntersecting }) => {
         if (!isIntersecting) return;
-        animate(
-          target,
-          {
-            opacity: [0.25, 1],
-            transform: ["translateY(24px)", "translateY(0)"],
-          },
-          { duration: 0.65 },
-        );
+        if (target.hasAttribute("data-reveal-group")) {
+          $$("[data-reveal-child]", target).forEach((child, i) =>
+            animate(
+              child,
+              {
+                opacity: [0.2, 1],
+                transform: [
+                  i ? "translateY(24px)" : "translateX(-24px)",
+                  "translate(0,0)",
+                ],
+              },
+              { duration: 0.6, delay: i * 0.09 },
+            ),
+          );
+        } else
+          animate(
+            target,
+            {
+              opacity: [0.2, 1],
+              transform: ["translateY(22px)", "translateY(0)"],
+            },
+            { duration: 0.55 },
+          );
         observer.unobserve(target);
       });
     },
-    { threshold: 0.08 },
+    { threshold: 0.16 },
   );
-  $$("[data-reveal]").forEach((el) => observer.observe(el));
+  $$("[data-reveal],[data-reveal-group]").forEach((el) => observer.observe(el));
 }
+
 function initWorkflow() {
-  const track = $("[data-workflow]");
-  if (!track) return;
-  const cards = $$(".workflow-card", track),
+  const stage = $("[data-workflow]");
+  if (!stage) return;
+  const panels = $$(".workflow-panel", stage),
+    tabs = $$("[data-work-tab]", stage),
     prev = $("[data-work-prev]"),
     next = $("[data-work-next]");
   let index = 0,
-    scrollAnimation;
+    animations = [],
+    touch = null;
+  stage.classList.add("is-enhanced");
+  $(".workflow-tabs", stage).hidden = false;
   $("[data-work-controls]").hidden = false;
-  cards.forEach((card, i) => {
-    card.setAttribute("role", "group");
-    card.setAttribute("aria-label", "Этап " + (i + 1) + " из " + cards.length);
-  });
-  const position = (i) => cards[i].offsetLeft - cards[0].offsetLeft;
-  function update() {
-    index = cards.reduce(
-      (best, card, i) =>
-        Math.abs(position(i) - track.scrollLeft) <
-        Math.abs(position(best) - track.scrollLeft)
-          ? i
-          : best,
-      0,
-    );
-    $("[data-work-counter]").textContent =
-      String(index + 1).padStart(2, "0") + " / 04";
-    prev.disabled = index === 0;
-    next.disabled = index === cards.length - 1;
-    cards.forEach((card, i) => {
-      if (i === index) card.setAttribute("aria-current", "step");
-      else card.removeAttribute("aria-current");
+  function show(i, moving = true, focus = false) {
+    i = Math.max(0, Math.min(panels.length - 1, i));
+    const direction = i >= index ? 1 : -1;
+    if (i === index && moving) return;
+    animations.forEach((a) => a?.stop());
+    animations = [];
+    index = i;
+    panels.forEach((p, n) => {
+      p.classList.toggle("is-active", n === i);
+      p.inert = n !== i;
+      p.setAttribute("aria-hidden", String(n !== i));
     });
-    $("[data-work-progress]").style.transform =
-      "translateX(" + index * 100 + "%)";
+    tabs.forEach((t, n) => {
+      t.setAttribute("aria-selected", String(n === i));
+      t.tabIndex = n === i ? 0 : -1;
+    });
+    prev.disabled = i === 0;
+    next.disabled = i === panels.length - 1;
+    $("[data-work-counter]").textContent =
+      String(i + 1).padStart(2, "0") + " / 04";
+    if (focus) tabs[i].focus({ preventScroll: true });
+    if (moving) {
+      animations.push(
+        animate(
+          $(".step-content", panels[i]),
+          {
+            opacity: [0, 1],
+            transform: [
+              "translateX(" + direction * 26 + "px)",
+              "translateX(0)",
+            ],
+          },
+          { duration: 0.4 },
+        ),
+      );
+      animations.push(
+        animate(
+          $(".scene", panels[i]),
+          {
+            opacity: [0.2, 1],
+            transform: [
+              "translateX(" + direction * 38 + "px) scale(.96)",
+              "translateX(0) scale(1)",
+            ],
+          },
+          { duration: 0.43 },
+        ),
+      );
+      $$("[data-piece]", panels[i]).forEach((piece, n) =>
+        animations.push(
+          animate(
+            piece,
+            {
+              opacity: [0, 1],
+              transform: ["translateY(12px)", "translateY(0)"],
+            },
+            { delay: 0.09 + n * 0.04, duration: 0.32 },
+          ),
+        ),
+      );
+    }
   }
-  function go(i) {
-    i = Math.max(0, Math.min(cards.length - 1, i));
-    scrollAnimation?.stop();
-    if (!reducedMotion.matches && window.Motion) {
-      track.style.scrollSnapType = "none";
-      scrollAnimation = Motion.animate(track.scrollLeft, position(i), {
-        duration: 0.55,
-        ease: [0.22, 1, 0.36, 1],
-        onUpdate: (v) => {
-          track.scrollLeft = v;
-        },
-      });
-      scrollAnimation.then(() => {
-        track.style.scrollSnapType = "";
-        update();
-      });
-    } else track.scrollLeft = position(i);
-  }
-  prev.addEventListener("click", () => go(index - 1));
-  next.addEventListener("click", () => go(index + 1));
-  track.addEventListener("keydown", (e) => {
-    const keys = {
+  tabs.forEach((t, i) => t.addEventListener("click", () => show(i)));
+  prev.addEventListener("click", () => show(index - 1));
+  next.addEventListener("click", () => show(index + 1));
+  stage.addEventListener("keydown", (e) => {
+    const map = {
       ArrowLeft: index - 1,
       ArrowRight: index + 1,
       Home: 0,
-      End: cards.length - 1,
+      End: 3,
     };
-    if (Object.hasOwn(keys, e.key)) {
+    if (Object.hasOwn(map, e.key)) {
       e.preventDefault();
-      go(keys[e.key]);
+      show(map[e.key], true, e.target.matches("[role=tab]"));
     }
   });
-  track.addEventListener(
-    "pointerdown",
-    () => {
-      scrollAnimation?.stop();
-      track.style.scrollSnapType = "";
+  stage.addEventListener(
+    "touchstart",
+    (e) => {
+      touch = {
+        x: e.changedTouches[0].clientX,
+        y: e.changedTouches[0].clientY,
+      };
     },
     { passive: true },
   );
-  track.addEventListener("scroll", update, { passive: true });
-  addEventListener("resize", update);
-  update();
+  stage.addEventListener(
+    "touchend",
+    (e) => {
+      if (!touch) return;
+      const dx = e.changedTouches[0].clientX - touch.x,
+        dy = e.changedTouches[0].clientY - touch.y;
+      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4)
+        show(index + (dx < 0 ? 1 : -1));
+      touch = null;
+    },
+    { passive: true },
+  );
+  show(0, false);
 }
+let selectService = null;
+function initServices() {
+  const group = $(".service-panels");
+  if (!group) return;
+  const tabs = $$("[data-service-tab]"),
+    panels = $$(".service-panel", group),
+    pill = $(".service-indicator"),
+    tablist = $(".service-tabs");
+  let selected = "buy",
+    animations = [],
+    pillAnimation;
+  group.classList.add("is-enhanced");
+  tablist.hidden = false;
+  function positionPill() {
+    const tab = tabs.find((t) => t.dataset.serviceTab === selected);
+    pillAnimation?.stop();
+    const props = {
+      left: tab.offsetLeft + "px",
+      width: tab.offsetWidth + "px",
+    };
+    pillAnimation = animate(pill, props, { duration: 0.34 });
+    if (!pillAnimation) Object.assign(pill.style, props);
+  }
+  selectService = (value, moving = true) => {
+    if (!["buy", "sell"].includes(value)) return;
+    animations.forEach((a) => a?.stop());
+    animations = [];
+    const direction = value === "sell" ? 1 : -1;
+    selected = value;
+    tabs.forEach((t) => {
+      const active = t.dataset.serviceTab === value;
+      t.setAttribute("aria-selected", String(active));
+      t.tabIndex = active ? 0 : -1;
+    });
+    panels.forEach((p) => {
+      const active = p.id === "service-" + value;
+      p.classList.toggle("is-active", active);
+      p.inert = !active;
+      p.setAttribute("aria-hidden", String(!active));
+    });
+    positionPill();
+    const p = $("#service-" + value);
+    if (moving) {
+      animations.push(
+        animate(
+          $(".service-copy", p),
+          {
+            opacity: [0, 1],
+            transform: [
+              "translateX(" + direction * 22 + "px)",
+              "translateX(0)",
+            ],
+          },
+          { duration: 0.38 },
+        ),
+      );
+      animations.push(
+        animate(
+          $(".service-art", p),
+          {
+            opacity: [0.1, 1],
+            transform: ["translateY(16px)", "translateY(0)"],
+          },
+          { duration: 0.42 },
+        ),
+      );
+    }
+    document.dispatchEvent(new Event("servicechange"));
+  };
+  tabs.forEach((t) =>
+    t.addEventListener("click", () => {
+      selectService(t.dataset.serviceTab);
+      history.replaceState(null, "", "#" + t.dataset.serviceTab);
+    }),
+  );
+  tablist.addEventListener("keydown", (e) => {
+    if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
+      e.preventDefault();
+      const value = ["ArrowLeft", "Home"].includes(e.key) ? "buy" : "sell";
+      selectService(value);
+      tabs.find((t) => t.dataset.serviceTab === value).focus();
+      history.replaceState(null, "", "#" + value);
+    }
+  });
+  const intent = new URLSearchParams(location.search).get("intent");
+  selectService(
+    location.hash === "#sell" || intent === "Продать" ? "sell" : "buy",
+    false,
+  );
+  addEventListener("resize", positionPill);
+  document.fonts.ready.then(positionPill);
+}
+function initAnchors() {
+  function go(hash, scroll = true) {
+    const id = decodeURIComponent(hash.slice(1));
+    if (!id) return;
+    if (["buy", "sell"].includes(id)) selectService?.(id);
+    const target = document.getElementById(
+      ["buy", "sell"].includes(id) ? "services" : id,
+    );
+    if (!target) return;
+    if (scroll) {
+      const row = $(".header-row"),
+        offset = Math.max(98, row.getBoundingClientRect().height + 44);
+      scrollTo({
+        top: Math.max(0, target.getBoundingClientRect().top + scrollY - offset),
+        behavior: reducedMotion.matches ? "instant" : "smooth",
+      });
+    }
+  }
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey)
+      return;
+    const hash = a.getAttribute("href");
+    if (hash.length < 2 || !document.getElementById(hash.slice(1))) return;
+    e.preventDefault();
+    history.pushState(null, "", hash);
+    go(hash);
+  });
+  addEventListener("popstate", () => go(location.hash));
+  addEventListener("hashchange", () => go(location.hash));
+  if (location.hash)
+    document.fonts.ready.then(() =>
+      requestAnimationFrame(() => go(location.hash)),
+    );
+}
+
 function initFAQ() {
   $$(".faq-list details").forEach((details) => {
-    details.addEventListener("toggle", () => {
-      if (details.open)
-        animate(
-          $("div", details),
-          { opacity: [0, 1], transform: ["translateY(-6px)", "translateY(0)"] },
-          { duration: 0.25 },
-        );
+    const summary = $("summary", details);
+    let animation,
+      revision = 0,
+      opened = details.open;
+    summary.addEventListener("click", (e) => {
+      e.preventDefault();
+      opened = !opened;
+      const ticket = ++revision;
+      animation?.stop();
+      const from = details.getBoundingClientRect().height;
+      details.style.height = "";
+      details.open = true;
+      const to = opened
+        ? details.getBoundingClientRect().height
+        : summary.getBoundingClientRect().height + 2;
+      summary.setAttribute("aria-expanded", String(opened));
+      const finish = () => {
+        if (ticket !== revision) return;
+        details.open = opened;
+        details.style.height = "";
+      };
+      animation = animate(
+        details,
+        { height: [from + "px", to + "px"] },
+        { duration: 0.32 },
+      );
+      if (animation) animation.then(finish);
+      else finish();
     });
   });
 }
@@ -454,9 +704,71 @@ function initCardTransitions(root) {
     });
   });
 }
+const CATEGORIES = Object.freeze({
+  apartment: {
+    label: "Квартиры",
+    types: ["квартира", "квартиры", "apartment"],
+  },
+  newbuild: { label: "Новостройки", types: [] },
+  house: { label: "Дома", types: ["дом", "дома", "таунхаус", "house"] },
+  land: { label: "Участки", types: ["участок", "земельный участок", "land"] },
+  commercial: {
+    label: "Коммерция",
+    types: [
+      "коммерческая недвижимость",
+      "коммерция",
+      "офис",
+      "помещение",
+      "commercial",
+    ],
+  },
+  storage: {
+    label: "Парковки и кладовые",
+    types: [
+      "парковка",
+      "машиноместо",
+      "парковочное место",
+      "кладовая",
+      "гараж",
+      "storage",
+    ],
+  },
+});
+let inquiryCategory = Object.hasOwn(
+  CATEGORIES,
+  new URLSearchParams(location.search).get("category") || "",
+)
+  ? new URLSearchParams(location.search).get("category")
+  : null;
+function matchesCategory(p, key) {
+  if (!key) return true;
+  if (key === "newbuild")
+    return p.market === "newbuild" || p.isNewBuild === true;
+  return (
+    p.category === key ||
+    CATEGORIES[key].types.includes(p.type.toLocaleLowerCase("ru").trim())
+  );
+}
+function moveCategoryPill(nav, link) {
+  const pill = $(".category-indicator", nav);
+  if (!pill || !link) {
+    if (pill) pill.style.opacity = "0";
+    return;
+  }
+  pill._animation?.stop();
+  const props = {
+    left: link.offsetLeft + "px",
+    top: link.offsetTop + "px",
+    width: link.offsetWidth + "px",
+    height: link.offsetHeight + "px",
+    opacity: 1,
+  };
+  pill._animation = animate(pill, props, { duration: 0.34 });
+  if (!pill._animation) Object.assign(pill.style, props);
+}
 function initCatalog(properties) {
   const featured = $("[data-featured]");
-  if (featured && properties.length) {
+  if (featured) {
     const selected = [
       ...properties.filter((p) => p.featured && p.status !== "sold"),
       ...properties.filter((p) => !p.featured && p.status !== "sold"),
@@ -471,34 +783,67 @@ function initCatalog(properties) {
   }
   const grid = $("[data-catalog-grid]"),
     filters = $("[data-catalog-filters]");
-  if (!grid || !properties.length) return;
+  if (!grid || !filters) return;
   const empty = $("[data-empty]"),
-    summary = $("[data-catalog-summary]"),
-    sort = $("[data-sort]");
-  filters.hidden = false;
-  summary.hidden = false;
-  ["type", "city"].forEach((key) => {
-    [...new Set(properties.map((p) => p[key]).filter(Boolean))]
-      .sort((a, b) => a.localeCompare(b, "ru"))
-      .forEach((v) => {
-        $('[name="' + key + '"]', filters).add(new Option(v, v));
-      });
-  });
-  let scheduled;
-  function render() {
-    const values = Object.fromEntries(new FormData(filters));
-    const query = values.query.trim().toLocaleLowerCase("ru");
+    sort = $("[data-sort]"),
+    nav = $("[data-category-nav]"),
+    links = $$("[data-category]", nav);
+  let category = "",
+    scheduled;
+  [...new Set(properties.map((p) => p.city).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "ru"))
+    .forEach((city) => filters.elements.city.add(new Option(city, city)));
+  function restore() {
+    const q = new URLSearchParams(location.search);
+    category = Object.hasOwn(CATEGORIES, q.get("category") || "")
+      ? q.get("category")
+      : "";
+    filters.elements.query.value = q.get("q") || "";
+    filters.elements.city.value = q.get("city") || "";
+    const price = Number(q.get("price"));
+    filters.elements.price.value =
+      price > 0 && Number.isFinite(price) ? price : "";
+    sort.value = ["price-asc", "price-desc"].includes(q.get("sort"))
+      ? q.get("sort")
+      : "default";
+  }
+  function writeURL(mode) {
+    const url = new URL(location.href),
+      v = Object.fromEntries(new FormData(filters));
+    const params = {
+      category,
+      q: v.query.trim(),
+      city: v.city,
+      price: v.price,
+      sort: sort.value === "default" ? "" : sort.value,
+    };
+    Object.entries(params).forEach(([k, value]) =>
+      value ? url.searchParams.set(k, value) : url.searchParams.delete(k),
+    );
+    if (url.href !== location.href)
+      history[mode === "replace" ? "replaceState" : "pushState"](null, "", url);
+  }
+  function render(mode) {
+    if (mode) writeURL(mode);
+    links.forEach((l) =>
+      l.setAttribute("aria-current", String(l.dataset.category === category)),
+    );
+    moveCategoryPill(
+      nav,
+      links.find((l) => l.dataset.category === category),
+    );
+    const v = Object.fromEntries(new FormData(filters)),
+      query = v.query.trim().toLocaleLowerCase("ru");
     let result = properties.filter(
       (p) =>
+        matchesCategory(p, category) &&
         (!query ||
           [p.title, p.city, p.district, p.type]
             .join(" ")
             .toLocaleLowerCase("ru")
             .includes(query)) &&
-        (!values.type || p.type === values.type) &&
-        (!values.city || p.city === values.city) &&
-        (!values.price ||
-          (Number.isFinite(p.price) && p.price <= Number(values.price))),
+        (!v.city || p.city === v.city) &&
+        (!v.price || (Number.isFinite(p.price) && p.price <= Number(v.price))),
     );
     if (sort.value === "price-asc")
       result.sort((a, b) => (a.price ?? Infinity) - (b.price ?? Infinity));
@@ -510,24 +855,34 @@ function initCatalog(properties) {
           ["active", "reserved", "sold"].indexOf(a.status) -
           ["active", "reserved", "sold"].indexOf(b.status),
       );
-    const oldPositions = new Map(
+    const positions = new Map(
       $$("[data-property-id]", grid).map((el) => [
         el.dataset.propertyId,
         el.getBoundingClientRect(),
       ]),
     );
     grid.innerHTML = result.map(propertyCard).join("");
-    $("[data-result-count]").textContent = "Найдено объектов: " + result.length;
+    $("[data-result-count]").textContent =
+      (category ? CATEGORIES[category].label + " · " : "") +
+      "Найдено объектов: " +
+      result.length;
     empty.hidden = result.length > 0;
-    if (!result.length) {
-      $(".empty-copy h3", empty).textContent = "Пока нет совпадений.";
-      $(".empty-copy p", empty).textContent =
-        "Измените параметры поиска или обсудите индивидуальный подбор с Ильсияр.";
-    }
-    $$(".property-card", grid).forEach((el) => {
-      const old = oldPositions.get(el.dataset.propertyId),
+    $(".empty-copy h3", empty).textContent =
+      "По выбранным условиям пока нет опубликованных объектов";
+    $(".empty-copy p:not(.section-kicker)", empty).textContent = category
+      ? "Категория «" +
+        CATEGORIES[category].label +
+        "». Измените условия или обсудите подбор с Ильсияр."
+      : "Измените условия или расскажите Ильсияр, какой объект вы ищете.";
+    $("[data-category-inquiry]", empty).href =
+      "index.html?intent=" +
+      encodeURIComponent("Купить") +
+      (category ? "&category=" + category : "") +
+      "#contact";
+    $$("[data-property-id]", grid).forEach((el) => {
+      const old = positions.get(el.dataset.propertyId),
         rect = el.getBoundingClientRect();
-      animate(
+      const reflow = animate(
         el,
         {
           opacity: [old ? 0.7 : 0, 1],
@@ -538,27 +893,69 @@ function initCatalog(properties) {
                 "px," +
                 (old.top - rect.top) +
                 "px)"
-              : "translateY(16px)",
+              : "translateY(20px)",
             "translate(0,0)",
           ],
         },
-        { duration: 0.35 },
+        { duration: 0.4 },
       );
+      reflow?.then(() => {
+        el.style.transform = "";
+        el.style.opacity = "";
+      });
     });
     initCardTransitions(grid);
   }
-  filters.addEventListener("submit", (e) => e.preventDefault());
-  filters.addEventListener("input", () => {
+  links.forEach((link) =>
+    link.addEventListener("click", (e) => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      clearTimeout(scheduled);
+      category = link.dataset.category;
+      render("push");
+    }),
+  );
+  filters.addEventListener("submit", (e) => {
+    e.preventDefault();
     clearTimeout(scheduled);
-    scheduled = setTimeout(render, 120);
+    render("push");
   });
-  filters.addEventListener("change", render);
+  filters.addEventListener("input", (e) => {
+    if (e.target.tagName === "SELECT") return;
+    clearTimeout(scheduled);
+    scheduled = setTimeout(() => render("replace"), 200);
+  });
+  filters.addEventListener("change", () => {
+    clearTimeout(scheduled);
+    render("push");
+  });
   filters.addEventListener("reset", () => {
+    clearTimeout(scheduled);
+    category = "";
     sort.value = "default";
-    requestAnimationFrame(render);
+    requestAnimationFrame(() => render("push"));
   });
-  sort.addEventListener("change", render);
+  $("[data-reset-filters]")?.addEventListener("click", () => filters.reset());
+  sort.addEventListener("change", () => render("push"));
+  addEventListener("popstate", () => {
+    clearTimeout(scheduled);
+    restore();
+    render();
+  });
+  addEventListener("resize", () =>
+    moveCategoryPill(
+      nav,
+      links.find((l) => l.dataset.category === category),
+    ),
+  );
+  restore();
   render();
+  document.fonts.ready.then(() =>
+    moveCategoryPill(
+      nav,
+      links.find((l) => l.dataset.category === category),
+    ),
+  );
 }
 function initProperty(properties) {
   const target = $("[data-property-detail]");
@@ -772,19 +1169,7 @@ async function loadPublicContent() {
       const p = properties.find((p) => p.id === requested);
       if (p) {
         inquiryProperty = p;
-        const box = $("[data-inquiry-context]");
-        box.hidden = false;
-        $("p", box).textContent = "Объект: " + p.title + " · " + p.city;
-        $("[name=comment]").maxLength = Math.max(
-          0,
-          1000 - propertyContext().length,
-        );
-        $("[data-clear-context]").addEventListener("click", () => {
-          inquiryProperty = null;
-          inquiryPropertyId = null;
-          box.hidden = true;
-          $("[name=comment]").maxLength = 1000;
-        });
+        updateInquiryContext();
       } else {
         setFormStatus(
           "notice",
@@ -797,7 +1182,7 @@ async function loadPublicContent() {
     const empty = $("[data-empty]");
     if (empty) {
       $(".empty-copy h3", empty).textContent = "Каталог временно недоступен.";
-      $(".empty-copy p", empty).textContent =
+      $(".empty-copy p:not(.section-kicker)", empty).textContent =
         "Попробуйте обновить страницу или обсудите подбор напрямую с Ильсияр.";
     }
     if ($("[data-property-detail]"))
@@ -816,6 +1201,13 @@ async function loadPublicContent() {
   }
 }
 function initIntentLinks() {
+  updateInquiryContext();
+  $("[data-clear-context]")?.addEventListener("click", () => {
+    inquiryCategory = null;
+    inquiryProperty = null;
+    inquiryPropertyId = null;
+    updateInquiryContext();
+  });
   document.addEventListener("click", (e) => {
     const link = e.target.closest("[data-intent]");
     if (!link || !link.getAttribute("href").startsWith("#")) return;
@@ -829,6 +1221,28 @@ function initIntentLinks() {
   if (option) option.checked = true;
 }
 function propertyContext() {
+  return (
+    (inquiryCategory
+      ? "Категория подбора: " + CATEGORIES[inquiryCategory].label + "\n\n"
+      : "") + objectContext()
+  );
+}
+function updateInquiryContext() {
+  const box = $("[data-inquiry-context]");
+  if (!box) return;
+  const parts = [];
+  if (inquiryCategory)
+    parts.push("Подбор: " + CATEGORIES[inquiryCategory].label);
+  if (inquiryProperty)
+    parts.push(
+      "Объект: " + inquiryProperty.title + " · " + inquiryProperty.city,
+    );
+  box.hidden = !parts.length;
+  $("p", box).textContent = parts.join(". ");
+  $("[name=comment]").maxLength = Math.max(0, 1000 - propertyContext().length);
+}
+
+function objectContext() {
   if (!inquiryProperty && inquiryPropertyId)
     return (
       "Объект ID: " +
@@ -1007,6 +1421,7 @@ function initLeadForm() {
       form.reset();
       inquiryProperty = null;
       inquiryPropertyId = null;
+      inquiryCategory = null;
       $("[data-inquiry-context]").hidden = true;
       form.elements.comment.maxLength = 1000;
     } catch (error) {
@@ -1043,7 +1458,9 @@ function initLeadForm() {
 }
 document.addEventListener("DOMContentLoaded", () => {
   applyConfig();
+  initServices();
   initHeader();
+  initAnchors();
   initIntentLinks();
   initLeadForm();
   initWorkflow();

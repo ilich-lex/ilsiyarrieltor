@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f6f5f1" />
+    <meta name="theme-color" content="#123E43" />
     <meta name="format-detection" content="telephone=no" />
     <title>Объекты недвижимости — Ильсияр Тухватшина | Norma</title>
     <meta
@@ -205,12 +205,30 @@
           предложения и подбор под ваш запрос.
         </p>
       </header>
+      <nav
+        class="category-nav"
+        aria-label="Категории недвижимости"
+        data-category-nav
+      >
+        <span class="category-indicator" aria-hidden="true"></span
+        ><a href="objects.html" data-category="">Все объекты</a
+        ><a href="objects.html?category=apartment" data-category="apartment"
+          >Квартиры</a
+        ><a href="objects.html?category=newbuild" data-category="newbuild"
+          >Новостройки</a
+        ><a href="objects.html?category=house" data-category="house">Дома</a
+        ><a href="objects.html?category=land" data-category="land">Участки</a
+        ><a href="objects.html?category=commercial" data-category="commercial"
+          >Коммерция</a
+        ><a href="objects.html?category=storage" data-category="storage"
+          >Парковки и кладовые</a
+        >
+      </nav>
       <form
         class="catalog-filters"
         data-catalog-filters
         role="search"
         aria-label="Поиск объектов"
-        hidden
       >
         <label class="search-field"
           ><span>Поиск</span
@@ -218,18 +236,15 @@
             type="search"
             name="query"
             placeholder="Город, район, название"
-            autocomplete="off" /></label
-        ><label
-          ><span>Тип недвижимости</span
-          ><select name="type">
-            <option value="">Все типы</option>
-          </select></label
-        ><label
+            autocomplete="off"
+        /></label>
+        <label
           ><span>Город</span
           ><select name="city">
             <option value="">Все города</option>
           </select></label
-        ><label
+        >
+        <label
           ><span>Цена до, ₽</span
           ><input
             name="price"
@@ -237,10 +252,11 @@
             min="0"
             step="1"
             placeholder="Без ограничений"
-            inputmode="numeric" /></label
-        ><button class="filter-reset" type="reset">Сбросить</button>
+            inputmode="numeric"
+        /></label>
+        <button class="filter-reset" type="reset">Сбросить</button>
       </form>
-      <div class="catalog-summary" data-catalog-summary hidden>
+      <div class="catalog-summary" data-catalog-summary>
         <p data-result-count aria-live="polite"></p>
         <label
           >Порядок
@@ -253,27 +269,50 @@
       </div>
       <div data-catalog-grid class="property-grid"></div>
       <div class="catalog-empty" data-empty>
-        <figure class="empty-art">
-          <img
-            src="assets/images/interior-detail.webp"
-            width="800"
-            height="960"
-            loading="lazy"
-            alt="Светлый интерьер — иллюстративная фотография"
-          />
-          <figcaption>Иллюстрация интерьера · не объявление</figcaption>
-        </figure>
+        <div class="empty-mark" aria-hidden="true">
+          <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
+            <rect
+              x="7"
+              y="7"
+              width="27"
+              height="34"
+              rx="7"
+              stroke="currentColor"
+              stroke-width="1.6"
+            />
+            <path
+              d="M15 17h11M15 24h11M15 31h6"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+            <circle
+              cx="34"
+              cy="34"
+              r="10"
+              fill="#DDEDE7"
+              stroke="currentColor"
+              stroke-width="1.6"
+            />
+            <path
+              d="m41 41 6 6"
+              stroke="currentColor"
+              stroke-width="1.6"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
         <div class="empty-copy">
-          <span class="section-kicker">Индивидуальный подбор</span>
-          <h3>Пока готовим<br />предложения к публикации.</h3>
-          <p>
-            Объекты готовятся к публикации. Расскажите, что вы ищете — обсудим
-            подходящие варианты лично.
-          </p>
+          <p class="section-kicker">Подбор под ваш запрос</p>
+          <h3>По выбранным условиям пока нет опубликованных объектов</h3>
+          <p>Измените условия или расскажите Ильсияр, какой объект вы ищете.</p>
+        </div>
+        <div class="empty-actions">
           <a
             class="button button-dark"
             href="index.html?intent=Купить#contact"
             data-intent="Купить"
+            data-category-inquiry
             >Обсудить подбор
             <svg
               class="icon"
@@ -286,11 +325,13 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.6"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              /></svg
-          ></a>
+              /></svg></a
+          ><button class="text-link" type="button" data-reset-filters>
+            Сбросить фильтры
+          </button>
         </div>
       </div>
       <noscript
@@ -363,23 +404,6 @@
           >
         </p>
       </div>
-      <p class="shell image-credit">
-        Иллюстративные интерьеры:
-        <a
-          href="https://unsplash.com/photos/bright-living-room-with-large-windows-overlooking-street-5WR0q562X8Q"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Zuoranyi</a
-        >
-        и
-        <a
-          href="https://unsplash.com/photos/a-living-room-filled-with-furniture-and-a-large-window-xiiX89sNvkc"
-          target="_blank"
-          rel="noopener noreferrer"
-          >Alex Tyson</a
-        >
-        / Unsplash. Не являются предложениями о продаже.
-      </p>
     </footer>
   </body>
 </html>
