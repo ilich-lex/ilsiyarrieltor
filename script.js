@@ -148,13 +148,41 @@ function initHeader() {
     toggle = $(".menu-toggle"),
     menu = $("#mobile-menu"),
     nav = $(".desktop-nav"),
-    pill = $(".nav-indicator");
+    pill = $(".nav-indicator"),
+    reflection = $(".header-reflection");
   let menuAnimation,
     pillAnimation,
     menuRevision = 0,
     activeLink = null,
     frame;
   const links = $$("[data-nav]", nav);
+  let reflectionAnimation,
+    reflectionFrame,
+    reflectionX = 0;
+  header.addEventListener("pointermove", (event) => {
+    if (event.pointerType !== "mouse" || reducedMotion.matches || !reflection)
+      return;
+    reflectionX = event.clientX - header.getBoundingClientRect().left - 180;
+    if (reflectionFrame) return;
+    reflectionFrame = requestAnimationFrame(() => {
+      reflectionFrame = null;
+      reflectionAnimation?.stop();
+      reflectionAnimation = animate(
+        reflection,
+        { transform: "translateX(" + reflectionX + "px)" },
+        { duration: 0.42 },
+      );
+    });
+  });
+  header.addEventListener("pointerleave", () => {
+    if (!reflection) return;
+    reflectionAnimation?.stop();
+    reflectionAnimation = animate(
+      reflection,
+      { transform: "translateX(" + header.clientWidth * 0.35 + "px)" },
+      { duration: 0.5 },
+    );
+  });
   function setMenu(open, restore = false) {
     const revision = ++menuRevision;
     menuAnimation?.stop();
@@ -230,11 +258,14 @@ function initHeader() {
       return;
     }
     const props = {
-      left: link.offsetLeft + "px",
+      transform: "translateX(" + link.offsetLeft + "px)",
       width: link.offsetWidth + "px",
       opacity: 1,
     };
-    pillAnimation = animate(pill, props, { duration: 0.36 });
+    pillAnimation = animate(pill, props, {
+      duration: 0.34,
+      ease: [0.19, 1, 0.22, 1],
+    });
     if (!pillAnimation) Object.assign(pill.style, props);
   }
   links.forEach((link) => {
@@ -299,6 +330,29 @@ function initHeader() {
 function initReveals() {
   if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
     return;
+  animate(
+    $("[data-header]"),
+    {
+      opacity: [0.3, 1],
+      transform: ["translate(-50%, -12px)", "translate(-50%, 0)"],
+    },
+    { duration: 0.75 },
+  );
+  $$(".hero-actions .button").forEach((button, i) => {
+    const intro = animate(
+      button,
+      { opacity: [0, 1], transform: ["translateY(12px)", "translateY(0)"] },
+      { duration: 0.55, delay: 0.24 + i * 0.07 },
+    );
+    // Motion commits its final inline styles after resolving completion.
+    // Release them on the next frame so CSS hover/press can own transform.
+    intro?.then(() =>
+      requestAnimationFrame(() => {
+        button.style.transform = "";
+        button.style.opacity = "";
+      }),
+    );
+  });
   $$("[data-hero]").forEach((el, i) =>
     animate(
       el,
@@ -311,7 +365,7 @@ function initReveals() {
     {
       opacity: [0.2, 1],
       transform: ["translateY(20px) scale(.97)", "translateY(0) scale(1)"],
-      clipPath: ["inset(0 0 14% 0 round 32px)", "inset(0 0 0% 0 round 32px)"],
+      clipPath: ["inset(0 0 14% 0 round 16px)", "inset(0 0 0% 0 round 16px)"],
     },
     { duration: 0.95, delay: 0.06 },
   );
@@ -374,64 +428,82 @@ function initWorkflow() {
   stage.classList.add("is-enhanced");
   $(".workflow-tabs", stage).hidden = false;
   $("[data-work-controls]").hidden = false;
+  let revision = 0;
   function show(i, moving = true, focus = false) {
     i = Math.max(0, Math.min(panels.length - 1, i));
-    const direction = i >= index ? 1 : -1;
     if (i === index && moving) return;
+    const previous = index,
+      direction = i >= index ? 1 : -1,
+      ticket = ++revision;
     animations.forEach((a) => a?.stop());
     animations = [];
     index = i;
-    panels.forEach((p, n) => {
-      p.classList.toggle("is-active", n === i);
-      p.inert = n !== i;
-      p.setAttribute("aria-hidden", String(n !== i));
+    panels.forEach((panel, n) => {
+      panel.classList.remove("is-leaving");
+      panel.classList.toggle("is-active", n === i);
+      panel.style.opacity = "";
+      panel.style.transform = "";
+      panel.inert = n !== i;
+      panel.setAttribute("aria-hidden", String(n !== i));
     });
-    tabs.forEach((t, n) => {
-      t.setAttribute("aria-selected", String(n === i));
-      t.tabIndex = n === i ? 0 : -1;
+    tabs.forEach((tab, n) => {
+      tab.setAttribute("aria-selected", String(n === i));
+      tab.tabIndex = n === i ? 0 : -1;
     });
     prev.disabled = i === 0;
     next.disabled = i === panels.length - 1;
-    $("[data-work-counter]").textContent =
-      String(i + 1).padStart(2, "0") + " / 04";
+    const counter = $("[data-work-counter]"),
+      progress = $("[data-work-progress]");
+    counter.textContent = String(i + 1).padStart(2, "0") + " / 04";
+    const progressMotion = animate(
+      progress,
+      { width: (i + 1) * 25 + "%" },
+      { duration: 0.4 },
+    );
+    if (progressMotion) animations.push(progressMotion);
+    else progress.style.width = (i + 1) * 25 + "%";
     if (focus) tabs[i].focus({ preventScroll: true });
-    if (moving) {
+    if (
+      moving &&
+      !reducedMotion.matches &&
+      typeof window.Motion?.animate === "function"
+    ) {
+      const outgoing = panels[previous],
+        incoming = panels[i];
+      outgoing.classList.add("is-leaving");
+      const exit = animate(
+        outgoing,
+        {
+          opacity: [1, 0],
+          transform: ["translateX(0)", "translateX(" + -direction * 24 + "px)"],
+        },
+        { duration: 0.16, ease: [0.4, 0, 1, 1] },
+      );
+      animations.push(exit);
+      exit?.then(() => {
+        if (ticket === revision) outgoing.classList.remove("is-leaving");
+      });
       animations.push(
         animate(
-          $(".step-content", panels[i]),
+          incoming,
           {
             opacity: [0, 1],
             transform: [
-              "translateX(" + direction * 26 + "px)",
+              "translateX(" + direction * 32 + "px)",
               "translateX(0)",
             ],
           },
-          { duration: 0.4 },
+          { duration: 0.28, delay: 0.14 },
         ),
       );
       animations.push(
         animate(
-          $(".scene", panels[i]),
+          counter,
           {
-            opacity: [0.2, 1],
-            transform: [
-              "translateX(" + direction * 38 + "px) scale(.96)",
-              "translateX(0) scale(1)",
-            ],
+            opacity: [0.35, 1],
+            transform: ["translateY(6px)", "translateY(0)"],
           },
-          { duration: 0.43 },
-        ),
-      );
-      $$("[data-piece]", panels[i]).forEach((piece, n) =>
-        animations.push(
-          animate(
-            piece,
-            {
-              opacity: [0, 1],
-              transform: ["translateY(12px)", "translateY(0)"],
-            },
-            { delay: 0.09 + n * 0.04, duration: 0.32 },
-          ),
+          { duration: 0.28 },
         ),
       );
     }
@@ -533,7 +605,7 @@ function initServices() {
       );
       animations.push(
         animate(
-          $(".service-art", p),
+          $(".service-steps", p),
           {
             opacity: [0.1, 1],
             transform: ["translateY(16px)", "translateY(0)"],
@@ -899,10 +971,12 @@ function initCatalog(properties) {
         },
         { duration: 0.4 },
       );
-      reflow?.then(() => {
-        el.style.transform = "";
-        el.style.opacity = "";
-      });
+      reflow?.then(() =>
+        requestAnimationFrame(() => {
+          el.style.transform = "";
+          el.style.opacity = "";
+        }),
+      );
     });
     initCardTransitions(grid);
   }
@@ -963,7 +1037,7 @@ function initProperty(properties) {
   const id = new URLSearchParams(location.search).get("id"),
     p = properties.find((p) => p.id === id);
   if (!p) return;
-  document.title = p.title + " — " + p.city + " | Norma";
+  document.title = p.title + " — " + p.city + " | Норма";
   $("link[rel=canonical]").href =
     "https://ilsiyar.ru/property.html?id=" + encodeURIComponent(p.id);
   $('meta[property="og:title"]').content = document.title;
