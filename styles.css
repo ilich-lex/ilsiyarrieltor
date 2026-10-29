@@ -1372,6 +1372,10 @@ textarea {
   font-size: 16px;
   line-height: 1.6;
 }
+.form-status .form-reference {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
 .form-status a {
   text-decoration: underline;
   font-size: 15px;

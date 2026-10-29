@@ -327,63 +327,77 @@ function initHeader() {
   update();
 }
 
-function initReveals() {
+function initReveals(playIntro = true) {
   if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
     return;
-  animate(
-    $("[data-header]"),
-    {
-      opacity: [0.3, 1],
-      transform: ["translate(-50%, -12px)", "translate(-50%, 0)"],
-    },
-    { duration: 0.75 },
-  );
-  $$(".hero-actions .button").forEach((button, i) => {
-    const intro = animate(
-      button,
-      { opacity: [0, 1], transform: ["translateY(12px)", "translateY(0)"] },
-      { duration: 0.55, delay: 0.24 + i * 0.07 },
-    );
-    // Motion commits its final inline styles after resolving completion.
-    // Release them on the next frame so CSS hover/press can own transform.
-    intro?.then(() =>
-      requestAnimationFrame(() => {
-        button.style.transform = "";
-        button.style.opacity = "";
-      }),
-    );
-  });
-  $$("[data-hero]").forEach((el, i) =>
+  if (playIntro) {
     animate(
-      el,
-      { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0)"] },
-      { delay: i * 0.075, duration: 0.7 },
+      $("[data-header]"),
+      {
+        opacity: [0.3, 1],
+        transform: ["translate(-50%, -12px)", "translate(-50%, 0)"],
+      },
+      { duration: 0.75 },
+    );
+    $$(".hero-actions .button").forEach((button, i) => {
+      const intro = animate(
+        button,
+        { opacity: [0, 1], transform: ["translateY(12px)", "translateY(0)"] },
+        { duration: 0.55, delay: 0.24 + i * 0.07 },
+      );
+      // Motion commits its final inline styles after resolving completion.
+      // Release them on the next frame so CSS hover/press can own transform.
+      intro?.then(() =>
+        requestAnimationFrame(() => {
+          button.style.transform = "";
+          button.style.opacity = "";
+        }),
+      );
+    });
+    $$("[data-hero]").forEach((el, i) =>
+      animate(
+        el,
+        { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0)"] },
+        { delay: i * 0.075, duration: 0.7 },
+      ),
+    );
+    animate(
+      $("[data-hero-image]"),
+      {
+        opacity: [0.2, 1],
+        transform: ["translateY(20px) scale(.97)", "translateY(0) scale(1)"],
+        clipPath: ["inset(0 0 14% 0 round 16px)", "inset(0 0 0% 0 round 16px)"],
+      },
+      { duration: 0.95, delay: 0.06 },
+    );
+    animate(
+      $(".hero-plane"),
+      { transform: ["translateX(28px)", "translateX(0)"], opacity: [0.45, 1] },
+      { duration: 0.9 },
+    );
+    animate(
+      $(".portrait-caption"),
+      { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0)"] },
+      { duration: 0.45, delay: 0.45 },
+    );
+  }
+  if (!("IntersectionObserver" in window)) return;
+  const alreadyVisible = new WeakSet(
+    $$("[data-reveal],[data-reveal-group],[data-reveal-workflow]").filter(
+      (el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.top < innerHeight && rect.bottom > 0;
+      },
     ),
   );
-  animate(
-    $("[data-hero-image]"),
-    {
-      opacity: [0.2, 1],
-      transform: ["translateY(20px) scale(.97)", "translateY(0) scale(1)"],
-      clipPath: ["inset(0 0 14% 0 round 16px)", "inset(0 0 0% 0 round 16px)"],
-    },
-    { duration: 0.95, delay: 0.06 },
-  );
-  animate(
-    $(".hero-plane"),
-    { transform: ["translateX(28px)", "translateX(0)"], opacity: [0.45, 1] },
-    { duration: 0.9 },
-  );
-  animate(
-    $(".portrait-caption"),
-    { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0)"] },
-    { duration: 0.45, delay: 0.45 },
-  );
-  if (!("IntersectionObserver" in window)) return;
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach(({ target, isIntersecting }) => {
         if (!isIntersecting) return;
+        if (!playIntro && alreadyVisible.has(target)) {
+          observer.unobserve(target);
+          return;
+        }
         if (target.hasAttribute("data-reveal-workflow")) {
           $$(".workflow-panel", target).forEach((card, i) => {
             const reveal = animate(
@@ -1402,7 +1416,7 @@ function objectContext() {
     "\n\n"
   );
 }
-function setFormStatus(state = "", title = "", message = "") {
+function setFormStatus(state = "", title = "", message = "", reference = "") {
   const box = $("[data-form-status]");
   if (!box) return;
   box.replaceChildren();
@@ -1414,6 +1428,12 @@ function setFormStatus(state = "", title = "", message = "") {
   strong.textContent = title;
   text.textContent = message;
   box.append(strong, text);
+  if (/^[a-f0-9-]{36}$/i.test(reference)) {
+    const code = document.createElement("span");
+    code.className = "form-reference";
+    code.textContent = "Код заявки: " + reference;
+    box.append(code);
+  }
   if (state === "error" || state === "notice") {
     const link = document.createElement("a");
     link.href = SITE_CONFIG.max;
@@ -1442,26 +1462,83 @@ function buildLeadPayload(data) {
     comment: propertyContext() + String(data.comment || "").trim(),
     source: "ilsiyar-website",
     consent: data.consent === "on",
-    website: String(data.website || "").trim(),
+    website: String(data.contact_guard || data.website || "").trim(),
   };
 }
-async function sendLead(payload) {
+const LEAD_ATTEMPT_KEY = "ilsiyarLeadAttempt";
+let leadAttemptInMemory = null;
+function readLeadAttempt() {
+  let attempt = leadAttemptInMemory;
+  try {
+    attempt ||= JSON.parse(sessionStorage.getItem(LEAD_ATTEMPT_KEY));
+  } catch {}
+  if (
+    !attempt ||
+    !/^[a-f0-9-]{36}$/i.test(attempt.id) ||
+    !["sending", "unknown"].includes(attempt.state) ||
+    Date.now() - attempt.at > 86400000
+  )
+    return null;
+  return attempt;
+}
+function saveLeadAttempt(attempt) {
+  leadAttemptInMemory = attempt;
+  try {
+    if (attempt)
+      sessionStorage.setItem(LEAD_ATTEMPT_KEY, JSON.stringify(attempt));
+    else sessionStorage.removeItem(LEAD_ATTEMPT_KEY);
+  } catch {}
+}
+function newLeadId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = [...bytes].map((b) => b.toString(16).padStart(2, "0")).join("");
+  return (
+    hex.slice(0, 8) +
+    "-" +
+    hex.slice(8, 12) +
+    "-" +
+    hex.slice(12, 16) +
+    "-" +
+    hex.slice(16, 20) +
+    "-" +
+    hex.slice(20)
+  );
+}
+async function sendLead(payload, leadId) {
   const controller = new AbortController(),
     timer = setTimeout(() => controller.abort(), 55000);
   try {
     const response = await fetch(SITE_CONFIG.formEndpoint, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": leadId,
+      },
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
-    if (!response.ok) {
-      const error = new Error("Request failed");
+    let result;
+    try {
+      result = await response.json();
+    } catch {
+      result = {};
+    }
+    const correlated = result.leadId === leadId;
+    if (
+      !response.ok ||
+      result.ok !== true ||
+      result.delivery !== "accepted" ||
+      !correlated
+    ) {
+      const error = new Error("Lead not confirmed");
       error.status = response.status;
+      error.code = result.code;
+      error.uncertain = !(correlated && result.delivery === "not_sent");
       throw error;
     }
-    const result = await response.json();
-    if (result.ok !== true) throw new Error("Request not confirmed");
     return result;
   } finally {
     clearTimeout(timer);
@@ -1525,7 +1602,28 @@ function initLeadForm() {
       form.reportValidity();
       return;
     }
-    if (payload.website) return;
+    if (payload.website) {
+      setFormStatus(
+        "error",
+        "Не удалось отправить форму",
+        "Проверка формы не пройдена. Обновите страницу и заполните поля вручную или свяжитесь с Ильсияр напрямую.",
+      );
+      status.focus({ preventScroll: true });
+      status.scrollIntoView({ block: "nearest" });
+      return;
+    }
+    const unresolved = readLeadAttempt();
+    if (unresolved) {
+      setFormStatus(
+        "notice",
+        "Результат предыдущей отправки не подтверждён",
+        "Заявка могла поступить. Перед повторной отправкой уточните это у Ильсияр, назвав код заявки.",
+        unresolved.id,
+      );
+      status.focus({ preventScroll: true });
+      status.scrollIntoView({ block: "nearest" });
+      return;
+    }
     const remaining = 60000 - (Date.now() - lastSuccess());
     if (remaining > 0) {
       setFormStatus(
@@ -1538,12 +1636,24 @@ function initLeadForm() {
       status.focus({ preventScroll: true });
       return;
     }
+    const attempt = { id: newLeadId(), state: "sending", at: Date.now() };
+    saveLeadAttempt(attempt);
     submitting = true;
     button.disabled = true;
     button.textContent = "Отправляем…";
     form.setAttribute("aria-busy", "true");
+    const waiting = setTimeout(() => {
+      setFormStatus(
+        "notice",
+        "Сервер отвечает дольше обычного",
+        "Отправка ещё выполняется. Пожалуйста, дождитесь результата; повторно нажимать кнопку не нужно.",
+        attempt.id,
+      );
+    }, 9000);
     try {
-      await sendLead(payload);
+      const receipt = await sendLead(payload, attempt.id);
+      clearTimeout(waiting);
+      saveLeadAttempt(null);
       lastSuccessInMemory = Date.now();
       try {
         sessionStorage.setItem(
@@ -1552,9 +1662,12 @@ function initLeadForm() {
         );
       } catch {}
       setFormStatus(
-        "success",
-        "Заявка отправлена",
-        "Ильсияр получила ваше обращение и свяжется с вами.",
+        receipt.duplicate ? "notice" : "success",
+        receipt.duplicate ? "Эта заявка уже передана" : "Заявка отправлена",
+        receipt.duplicate
+          ? "Telegram ранее подтвердил отправку этой заявки. Повторное сообщение не отправлялось."
+          : "Ильсияр получила ваше обращение и свяжется с вами.",
+        attempt.id,
       );
       form.reset();
       inquiryProperty = null;
@@ -1563,25 +1676,42 @@ function initLeadForm() {
       $("[data-inquiry-context]").hidden = true;
       form.elements.comment.maxLength = 1000;
     } catch (error) {
-      if (error.status === 429)
-        setFormStatus(
-          "notice",
-          "Повторная заявка не отправлена",
-          "Сервис ограничил частые обращения. Подождите немного или напишите Ильсияр напрямую.",
-        );
-      else if (error.name === "AbortError")
+      clearTimeout(waiting);
+      const uncertain = error.uncertain !== false;
+      if (uncertain) {
+        saveLeadAttempt({ ...attempt, state: "unknown" });
         setFormStatus(
           "error",
           "Не удалось подтвердить отправку",
-          "Сервер не ответил вовремя. Заявка могла поступить. Свяжитесь с Ильсияр напрямую, чтобы уточнить.",
+          "Ответ сервера не подтверждён. Заявка могла поступить. Уточните это у Ильсияр перед повторной отправкой, назвав код заявки.",
+          attempt.id,
         );
-      else
-        setFormStatus(
-          "error",
-          "Не удалось отправить заявку",
-          "Попробуйте ещё раз или свяжитесь с Ильсияр напрямую.",
-        );
+      } else {
+        saveLeadAttempt(null);
+        if (error.status === 429)
+          setFormStatus(
+            "notice",
+            "Повторная заявка не отправлена",
+            "Сервис ограничил частые обращения. Подождите немного или напишите Ильсияр напрямую.",
+            attempt.id,
+          );
+        else if (["invalid_fields", "form_check_failed"].includes(error.code))
+          setFormStatus(
+            "error",
+            "Проверьте форму",
+            "Проверка формы не пройдена. Проверьте поля или обновите страницу. Можно связаться с Ильсияр напрямую.",
+            attempt.id,
+          );
+        else
+          setFormStatus(
+            "error",
+            "Не удалось отправить заявку",
+            "Попробуйте ещё раз или свяжитесь с Ильсияр напрямую.",
+            attempt.id,
+          );
+      }
     } finally {
+      clearTimeout(waiting);
       submitting = false;
       button.disabled = false;
       button.innerHTML = original;
@@ -1603,6 +1733,14 @@ document.addEventListener("DOMContentLoaded", () => {
   initLeadForm();
   initWorkflow();
   initFAQ();
-  initReveals();
+  // Optional animation loading must never delay form initialization.
+  if (typeof window.Motion?.animate === "function")
+    initReveals(
+      performance.getEntriesByName("first-contentful-paint").length === 0,
+    );
+  else
+    $("#motion-library")?.addEventListener("load", () => initReveals(false), {
+      once: true,
+    });
   loadPublicContent();
 });
