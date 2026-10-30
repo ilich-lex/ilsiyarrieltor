@@ -148,45 +148,18 @@ function initHeader() {
     toggle = $(".menu-toggle"),
     menu = $("#mobile-menu"),
     nav = $(".desktop-nav"),
-    pill = $(".nav-indicator"),
-    reflection = $(".header-reflection");
+    pill = $(".nav-indicator");
   let menuAnimation,
     pillAnimation,
     menuRevision = 0,
     activeLink = null,
     frame;
   const links = $$("[data-nav]", nav);
-  let reflectionAnimation,
-    reflectionFrame,
-    reflectionX = 0;
-  header.addEventListener("pointermove", (event) => {
-    if (event.pointerType !== "mouse" || reducedMotion.matches || !reflection)
-      return;
-    reflectionX = event.clientX - header.getBoundingClientRect().left - 180;
-    if (reflectionFrame) return;
-    reflectionFrame = requestAnimationFrame(() => {
-      reflectionFrame = null;
-      reflectionAnimation?.stop();
-      reflectionAnimation = animate(
-        reflection,
-        { transform: "translateX(" + reflectionX + "px)" },
-        { duration: 0.42 },
-      );
-    });
-  });
-  header.addEventListener("pointerleave", () => {
-    if (!reflection) return;
-    reflectionAnimation?.stop();
-    reflectionAnimation = animate(
-      reflection,
-      { transform: "translateX(" + header.clientWidth * 0.35 + "px)" },
-      { duration: 0.5 },
-    );
-  });
   function setMenu(open, restore = false) {
     const revision = ++menuRevision;
     menuAnimation?.stop();
     const from = menu.hidden ? 0 : menu.getBoundingClientRect().height;
+    header.classList.toggle("menu-open", open);
     toggle.setAttribute("aria-expanded", String(open));
     toggle.setAttribute("aria-label", open ? "Закрыть меню" : "Открыть меню");
     menu.hidden = false;
@@ -284,14 +257,7 @@ function initHeader() {
       let last = -Infinity;
       links.forEach((link) => {
         const id = link.dataset.nav;
-        if (
-          ["buy", "sell"].includes(id) &&
-          id !== $(".service-tabs [aria-selected=true]")?.dataset.serviceTab
-        )
-          return;
-        const target = document.getElementById(
-          ["buy", "sell"].includes(id) ? "services" : id,
-        );
+        const target = document.getElementById(id);
         if (!target || target.hidden) return;
         const top = target.getBoundingClientRect().top;
         if (top <= Math.max(150, innerHeight * 0.32) && top > last) {
@@ -322,435 +288,277 @@ function initHeader() {
       setMenu(false);
     movePill(activeLink);
   });
-  document.addEventListener("servicechange", update);
   document.fonts.ready.then(() => movePill(activeLink));
   update();
 }
 
-function initReveals(playIntro = true) {
-  if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
+function initHeroIntro() {
+  if (
+    reducedMotion.matches ||
+    performance.now() > 600 ||
+    document.body.dataset.page !== "home"
+  )
     return;
-  if (playIntro) {
-    animate(
-      $("[data-header]"),
-      {
-        opacity: [0.3, 1],
-        transform: ["translate(-50%, -12px)", "translate(-50%, 0)"],
-      },
-      { duration: 0.75 },
-    );
-    $$(".hero-actions .button").forEach((button, i) => {
-      const intro = animate(
-        button,
-        { opacity: [0, 1], transform: ["translateY(12px)", "translateY(0)"] },
-        { duration: 0.55, delay: 0.24 + i * 0.07 },
+  // Start immediately, never wait for the optional library or hide LCP pixels.
+  function entrance(element, keyframes, seconds, delay = 0) {
+    if (!element) return;
+    if (typeof window.Motion?.animate === "function") {
+      const motion = animate(element, keyframes, { duration: seconds, delay });
+      motion?.then(() =>
+        requestAnimationFrame(() => (element.style.transform = "")),
       );
-      // Motion commits its final inline styles after resolving completion.
-      // Release them on the next frame so CSS hover/press can own transform.
-      intro?.then(() =>
-        requestAnimationFrame(() => {
-          button.style.transform = "";
-          button.style.opacity = "";
-        }),
-      );
-    });
-    $$("[data-hero]").forEach((el, i) =>
-      animate(
-        el,
-        { opacity: [0, 1], transform: ["translateY(24px)", "translateY(0)"] },
-        { delay: i * 0.075, duration: 0.7 },
-      ),
-    );
-    animate(
-      $("[data-hero-image]"),
-      {
-        opacity: [0.2, 1],
-        transform: ["translateY(20px) scale(.97)", "translateY(0) scale(1)"],
-        clipPath: ["inset(0 0 14% 0 round 16px)", "inset(0 0 0% 0 round 16px)"],
-      },
-      { duration: 0.95, delay: 0.06 },
-    );
-    animate(
-      $(".hero-plane"),
-      { transform: ["translateX(28px)", "translateX(0)"], opacity: [0.45, 1] },
-      { duration: 0.9 },
-    );
-    animate(
-      $(".portrait-caption"),
-      { opacity: [0, 1], transform: ["translateY(10px)", "translateY(0)"] },
-      { duration: 0.45, delay: 0.45 },
-    );
+    } else if (element.animate) {
+      const motion = element.animate(keyframes, {
+        duration: seconds * 1000,
+        delay: delay * 1000,
+        easing: "cubic-bezier(.22,1,.36,1)",
+        fill: "both",
+      });
+      motion.finished.then(() => motion.cancel()).catch(() => {});
+    }
   }
-  if (!("IntersectionObserver" in window)) return;
-  const alreadyVisible = new WeakSet(
-    $$("[data-reveal],[data-reveal-group],[data-reveal-workflow]").filter(
-      (el) => {
-        const rect = el.getBoundingClientRect();
-        return rect.top < innerHeight && rect.bottom > 0;
-      },
+  entrance(
+    $(".hero-background img"),
+    { transform: ["scale(1.035)", "scale(1)"] },
+    1.05,
+  );
+  entrance(
+    $(".hero-person"),
+    { transform: ["translateY(12px)", "translateY(0)"] },
+    0.9,
+  );
+  entrance(
+    $(".hero h1"),
+    { transform: ["translateY(12px)", "translateY(0)"] },
+    0.8,
+  );
+  entrance(
+    $(".hero-description"),
+    { transform: ["translateY(10px)", "translateY(0)"] },
+    0.8,
+  );
+  $$(".hero-actions .button").forEach((button, i) =>
+    entrance(
+      button,
+      { transform: ["translateY(8px)", "translateY(0)"] },
+      0.65,
+      i * 0.06,
     ),
   );
+}
+
+function initReveals() {
+  if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
+    return;
+  if (!("IntersectionObserver" in window)) return;
   const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach(({ target, isIntersecting }) => {
+    (entries) =>
+      entries.forEach(({ target, isIntersecting, intersectionRatio }) => {
         if (!isIntersecting) return;
-        if (!playIntro && alreadyVisible.has(target)) {
-          observer.unobserve(target);
+        if (
+          target.hasAttribute("data-reference-process") &&
+          intersectionRatio < 0.65
+        )
           return;
-        }
-        if (target.hasAttribute("data-reveal-workflow")) {
-          $$(".workflow-panel", target).forEach((card, i) => {
-            const reveal = animate(
-              card,
-              {
-                opacity: [0.35, 1],
-                transform: ["translateY(28px)", "translateY(0)"],
-              },
-              { duration: 0.6, delay: i * 0.065 },
-            );
-            reveal?.then(() =>
-              requestAnimationFrame(() => {
-                card.style.transform = "";
-                card.style.opacity = "";
-              }),
-            );
-          });
-        } else if (target.hasAttribute("data-reveal-group")) {
+        if (target.hasAttribute("data-reference-about")) {
           animate(
-            $(".about-portrait", target),
-            {
-              clipPath: [
-                "inset(0 0 9% 0 round 16px)",
-                "inset(0 0 0 0 round 16px)",
-              ],
-            },
+            $(".about-photo", target),
+            { clipPath: ["inset(0 0 7% 0)", "inset(0)"] },
             { duration: 0.8 },
           );
-          $$("[data-reveal-child]", target).forEach((child, i) =>
+          animate(
+            $(".about-copy", target),
+            { transform: ["translateY(16px)", "translateY(0)"] },
+            { duration: 0.7 },
+          );
+          animate(
+            $(".about-points", target),
+            {
+              opacity: [0.65, 1],
+              transform: ["translateY(12px)", "translateY(0)"],
+            },
+            { duration: 0.7, delay: 0.08 },
+          );
+        } else if (target.hasAttribute("data-reference-process")) {
+          const vertical = innerWidth <= 700;
+          $$(".process-line", target).forEach((line, i) =>
             animate(
-              child,
+              line,
               {
-                opacity: [0.2, 1],
                 transform: [
-                  i ? "translateY(24px)" : "translateX(-24px)",
-                  "translate(0,0)",
+                  vertical ? "scaleY(0)" : "scaleX(0)",
+                  vertical ? "scaleY(1)" : "scaleX(1)",
                 ],
               },
-              { duration: 0.7, delay: i * 0.12 },
+              { duration: 0.65, delay: i * 0.14 },
+            ),
+          );
+          $$(".process-number", target).forEach((number, i) =>
+            animate(
+              number,
+              { opacity: [0.45, 1] },
+              { duration: 0.4, delay: i * 0.12 },
+            ),
+          );
+          $$(".process-step h3", target).forEach((label, i) =>
+            animate(
+              label,
+              { opacity: [0.65, 1] },
+              { duration: 0.45, delay: i * 0.08 },
             ),
           );
         } else
           animate(
             target,
             {
-              opacity: [0.2, 1],
-              transform: ["translateY(28px)", "translateY(0)"],
+              opacity: [0.65, 1],
+              transform: ["translateY(16px)", "translateY(0)"],
             },
-            { duration: 0.65 },
+            { duration: 0.6 },
           );
         observer.unobserve(target);
-      });
-    },
-    { threshold: 0.16 },
+      }),
+    { threshold: [0.18, 0.65] },
   );
-  $$("[data-reveal],[data-reveal-group],[data-reveal-workflow]").forEach((el) =>
-    observer.observe(el),
+  $$("[data-reference-about],[data-reference-process],[data-reveal]").forEach(
+    (el) => observer.observe(el),
   );
-}
-
-function initWorkflow() {
-  const stage = $("[data-workflow]");
-  if (!stage) return;
-  const panels = $$(".workflow-panel", stage),
-    tabs = $$("[data-work-tab]", stage),
-    track = $(".workflow-panels", stage),
-    prev = $("[data-work-prev]"),
-    next = $("[data-work-next]"),
-    counter = $("[data-work-counter]"),
-    progress = $("[data-work-progress]");
-  let index = 0,
-    animations = [],
-    railAnimation,
-    touch = null,
-    previousWidth = 0;
-  stage.classList.add("is-enhanced");
-  $(".workflow-tabs", stage).hidden = false;
-  $("[data-work-controls]").hidden = false;
-
-  function positionRail(moving = true) {
-    const first = panels[0].offsetLeft,
-      requested = panels[index].offsetLeft - first,
-      offset = Math.max(
-        0,
-        Math.min(requested, track.scrollWidth - track.clientWidth),
-      );
-    railAnimation?.stop();
-    const target = { transform: "translateX(" + -offset + "px)" };
-    railAnimation = moving ? animate(track, target, { duration: 0.44 }) : null;
-    if (!railAnimation) Object.assign(track.style, target);
-    panels.forEach((panel) => {
-      const left = panel.offsetLeft - first;
-      const visible =
-        left + panel.offsetWidth > offset + 2 &&
-        left < offset + track.clientWidth - 2;
-      panel.inert = !visible;
-      panel.setAttribute("aria-hidden", String(!visible));
-    });
-  }
-
-  function show(i, moving = true, focus = false) {
-    i = Math.max(0, Math.min(panels.length - 1, i));
-    if (i === index && moving) return;
-    const direction = i >= index ? 1 : -1;
-    animations.forEach((a) => a?.stop());
-    animations = [];
-    index = i;
-    // A rapid change must not leave a still-visible neighbouring card faded.
-    requestAnimationFrame(() => {
-      panels.forEach((panel, n) => {
-        if (n === index) return;
-        $$(".step-content,.step-number", panel).forEach((el) => {
-          el.style.opacity = "";
-          el.style.transform = "";
-        });
-      });
-    });
-    panels.forEach((panel, n) => panel.classList.toggle("is-active", n === i));
-    tabs.forEach((tab, n) => {
-      tab.setAttribute("aria-pressed", String(n === i));
-      if (n === i) tab.setAttribute("aria-current", "step");
-      else tab.removeAttribute("aria-current");
-    });
-    prev.disabled = i === 0;
-    next.disabled = i === panels.length - 1;
-    counter.textContent = String(i + 1).padStart(2, "0") + " / 04";
-    const progressMotion = animate(
-      progress,
-      { width: (i + 1) * 25 + "%" },
-      { duration: 0.42 },
+  const band = $(".contact-band"),
+    image = $(".band-background img");
+  if (
+    band &&
+    image &&
+    matchMedia("(min-width: 1001px) and (pointer: fine)").matches
+  ) {
+    let visible = false,
+      frame;
+    const update = () => {
+      frame = null;
+      if (!visible || reducedMotion.matches) return;
+      const r = band.getBoundingClientRect();
+      image.style.transform =
+        "translateY(" +
+        Math.max(-12, Math.min(12, (r.top - innerHeight * 0.5) * 0.025)) +
+        "px) scale(1.035)";
+    };
+    new IntersectionObserver((entries) => {
+      visible = entries[0].isIntersecting;
+      if (visible) update();
+    }).observe(band);
+    addEventListener(
+      "scroll",
+      () => {
+        if (visible && !frame) frame = requestAnimationFrame(update);
+      },
+      { passive: true },
     );
-    if (progressMotion) animations.push(progressMotion);
-    else progress.style.width = (i + 1) * 25 + "%";
-    positionRail(moving);
-    if (focus) tabs[i].focus({ preventScroll: true });
-    if (moving) {
-      animations.push(
-        animate(
-          $(".step-content", panels[i]),
-          {
-            opacity: [0.45, 1],
-            transform: [
-              "translateX(" + direction * 14 + "px)",
-              "translateX(0)",
-            ],
-          },
-          { duration: 0.42 },
-        ),
-      );
-      animations.push(
-        animate(
-          $(".step-number", panels[i]),
-          {
-            opacity: [0.5, 1],
-            transform: ["translateY(10px)", "translateY(0)"],
-          },
-          { duration: 0.38 },
-        ),
-      );
-      animations.push(
-        animate(
-          counter,
-          {
-            opacity: [0.35, 1],
-            transform: ["translateY(6px)", "translateY(0)"],
-          },
-          { duration: 0.3 },
-        ),
-      );
-    }
+    reducedMotion.addEventListener("change", () => {
+      if (reducedMotion.matches) image.style.transform = "";
+    });
   }
-  tabs.forEach((t, i) => t.addEventListener("click", () => show(i)));
-  prev.addEventListener("click", () => show(index - 1));
-  next.addEventListener("click", () => show(index + 1));
-  stage.addEventListener("keydown", (e) => {
-    const map = {
-      ArrowLeft: index - 1,
-      ArrowRight: index + 1,
-      Home: 0,
-      End: 3,
-    };
-    if (Object.hasOwn(map, e.key)) {
-      e.preventDefault();
-      show(map[e.key], true, e.target.matches("[data-work-tab]"));
-    }
-  });
-  stage.addEventListener(
-    "touchstart",
-    (e) => {
-      touch = {
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY,
-      };
-    },
-    { passive: true },
-  );
-  stage.addEventListener(
-    "touchend",
-    (e) => {
-      if (!touch) return;
-      const dx = e.changedTouches[0].clientX - touch.x,
-        dy = e.changedTouches[0].clientY - touch.y;
-      if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4)
-        show(index + (dx < 0 ? 1 : -1));
-      touch = null;
-    },
-    { passive: true },
-  );
-  stage.addEventListener(
-    "touchcancel",
-    () => {
-      touch = null;
-    },
-    { passive: true },
-  );
-  if ("ResizeObserver" in window)
-    new ResizeObserver(() => {
-      if (previousWidth !== track.clientWidth) {
-        previousWidth = track.clientWidth;
-        positionRail(false);
-      }
-    }).observe(track);
-  else addEventListener("resize", () => positionRail(false));
-  document.fonts.ready.then(() => positionRail(false));
-  show(0, false);
 }
 
-let selectService = null;
-function initServices() {
-  const group = $(".service-panels");
-  if (!group) return;
-  const tabs = $$("[data-service-tab]"),
-    panels = $$(".service-panel", group),
-    pill = $(".service-indicator"),
-    tablist = $(".service-tabs");
-  let selected = "buy",
-    animations = [],
-    pillAnimation;
-  group.classList.add("is-enhanced");
-  tablist.hidden = false;
-  function positionPill() {
-    const tab = tabs.find((t) => t.dataset.serviceTab === selected);
-    pillAnimation?.stop();
-    const props = {
-      left: tab.offsetLeft + "px",
-      width: tab.offsetWidth + "px",
-    };
-    pillAnimation = animate(pill, props, { duration: 0.34 });
-    if (!pillAnimation) Object.assign(pill.style, props);
+function openInquiry(hash, scrolling = true) {
+  const target = $("#contact-form");
+  if (!target) return;
+  if (hash === "#buy" || hash === "#sell") {
+    const value = hash === "#sell" ? "Продать" : "Купить";
+    const option = $$("input[name=intent]").find((el) => el.value === value);
+    if (option) option.checked = true;
   }
-  selectService = (value, moving = true) => {
-    if (!["buy", "sell"].includes(value)) return;
-    animations.forEach((a) => a?.stop());
-    animations = [];
-    const direction = value === "sell" ? 1 : -1;
-    selected = value;
-    tabs.forEach((t) => {
-      const active = t.dataset.serviceTab === value;
-      t.setAttribute("aria-selected", String(active));
-      t.tabIndex = active ? 0 : -1;
-    });
-    panels.forEach((p) => {
-      const active = p.id === "service-" + value;
-      p.classList.toggle("is-active", active);
-      p.inert = !active;
-      p.setAttribute("aria-hidden", String(!active));
-    });
-    positionPill();
-    const p = $("#service-" + value);
-    if (moving) {
-      animations.push(
-        animate(
-          $(".service-copy", p),
-          {
-            opacity: [0, 1],
-            transform: [
-              "translateX(" + direction * 22 + "px)",
-              "translateX(0)",
-            ],
-          },
-          { duration: 0.38 },
-        ),
-      );
-      animations.push(
-        animate(
-          $(".service-steps", p),
-          {
-            opacity: [0.1, 1],
-            transform: ["translateY(16px)", "translateY(0)"],
-          },
-          { duration: 0.42 },
-        ),
-      );
-    }
-    document.dispatchEvent(new Event("servicechange"));
-  };
-  tabs.forEach((t) =>
-    t.addEventListener("click", () => {
-      selectService(t.dataset.serviceTab);
-      history.replaceState(null, "", "#" + t.dataset.serviceTab);
-    }),
+  target.open = true;
+  if (scrolling) scrollToTarget(target);
+}
+function scrollToTarget(target) {
+  const offset = Math.max(
+    90,
+    ($(".header-row")?.getBoundingClientRect().height || 64) + 20,
   );
-  tablist.addEventListener("keydown", (e) => {
-    if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) {
-      e.preventDefault();
-      const value = ["ArrowLeft", "Home"].includes(e.key) ? "buy" : "sell";
-      selectService(value);
-      tabs.find((t) => t.dataset.serviceTab === value).focus();
-      history.replaceState(null, "", "#" + value);
-    }
+  scrollTo({
+    top: Math.max(0, target.getBoundingClientRect().top + scrollY - offset),
+    behavior: reducedMotion.matches ? "instant" : "smooth",
   });
-  const intent = new URLSearchParams(location.search).get("intent");
-  selectService(
-    location.hash === "#sell" || intent === "Продать" ? "sell" : "buy",
-    false,
-  );
-  addEventListener("resize", positionPill);
-  document.fonts.ready.then(positionPill);
+}
+function initReferenceInteractions() {
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("[data-inquiry-category]");
+    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    const category = link.dataset.inquiryCategory;
+    if (!Object.hasOwn(CATEGORIES, category)) return;
+    event.preventDefault();
+    inquiryCategory = category;
+    const option = $$("input[name=intent]").find((el) => el.value === "Купить");
+    if (option) option.checked = true;
+    updateInquiryContext();
+    const url = new URL(location.href);
+    url.searchParams.set("category", category);
+    url.searchParams.set("intent", "Купить");
+    url.hash = "contact-form";
+    history.pushState(null, "", url);
+    $(".more-directions")?.removeAttribute("open");
+    openInquiry("#contact-form");
+  });
+  $("[data-expand-faq]")?.addEventListener("click", (event) => {
+    const button = event.currentTarget,
+      opened = button.getAttribute("aria-pressed") !== "true";
+    button.setAttribute("aria-pressed", String(opened));
+    button.firstChild.textContent = opened ? "Свернуть ответы" : "Все ответы";
+    $$(".faq-list details").forEach((details) => {
+      const summary = $("summary", details);
+      const current = summary.hasAttribute("aria-expanded")
+        ? summary.getAttribute("aria-expanded") === "true"
+        : details.open;
+      if (current !== opened) summary.click();
+    });
+  });
 }
 function initAnchors() {
-  function go(hash, scroll = true) {
-    const id = decodeURIComponent(hash.slice(1));
-    if (!id) return;
-    if (["buy", "sell"].includes(id)) selectService?.(id);
-    const target = document.getElementById(
-      ["buy", "sell"].includes(id) ? "services" : id,
-    );
-    if (!target) return;
-    if (scroll) {
-      const row = $(".header-row"),
-        offset = Math.max(98, row.getBoundingClientRect().height + 44);
-      scrollTo({
-        top: Math.max(0, target.getBoundingClientRect().top + scrollY - offset),
-        behavior: reducedMotion.matches ? "instant" : "smooth",
-      });
+  function go(hash) {
+    let id;
+    try {
+      id = decodeURIComponent(hash.slice(1));
+    } catch {
+      return;
     }
+    if (!id) return;
+    if (["buy", "sell", "contact-form"].includes(id)) {
+      openInquiry(hash);
+      return;
+    }
+    const target = document.getElementById(id);
+    if (target) scrollToTarget(target);
   }
-  document.addEventListener("click", (e) => {
-    const a = e.target.closest('a[href^="#"]');
-    if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey || e.shiftKey)
+  document.addEventListener("click", (event) => {
+    const a = event.target.closest('a[href^="#"]');
+    if (
+      !a ||
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey
+    )
       return;
     const hash = a.getAttribute("href");
     if (hash.length < 2 || !document.getElementById(hash.slice(1))) return;
-    e.preventDefault();
+    event.preventDefault();
     history.pushState(null, "", hash);
     go(hash);
   });
-  addEventListener("popstate", () => go(location.hash));
+  function restore() {
+    const value = new URLSearchParams(location.search).get("category");
+    inquiryCategory = Object.hasOwn(CATEGORIES, value || "") ? value : null;
+    updateInquiryContext();
+    go(location.hash);
+  }
+  addEventListener("popstate", restore);
   addEventListener("hashchange", () => go(location.hash));
-  if (location.hash)
+  if (location.hash) {
+    if (["#buy", "#sell", "#contact-form"].includes(location.hash))
+      openInquiry(location.hash, false);
     document.fonts.ready.then(() =>
       requestAnimationFrame(() => go(location.hash)),
     );
+  }
 }
 
 function initFAQ() {
@@ -1028,7 +836,7 @@ function initCatalog(properties) {
       "index.html?intent=" +
       encodeURIComponent("Купить") +
       (category ? "&category=" + category : "") +
-      "#contact";
+      "#contact-form";
     $$("[data-property-id]", grid).forEach((el) => {
       const old = positions.get(el.dataset.propertyId),
         rect = el.getBoundingClientRect();
@@ -1202,7 +1010,7 @@ function initProperty(properties) {
     '" alt="Ильсияр Тухватшина" width="64" height="64"><div><strong>Ильсияр Тухватшина</strong><span>Эксперт по недвижимости · АН «Норма»</span></div></div>' +
     '<a class="button button-dark" href="index.html?property=' +
     encodeURIComponent(p.id) +
-    '&intent=Купить#contact">' +
+    '&intent=Купить#contact-form">' +
     (p.status === "sold"
       ? "Подобрать похожий объект"
       : "Обсудить этот объект") +
@@ -1726,20 +1534,17 @@ function initLeadForm() {
 }
 document.addEventListener("DOMContentLoaded", () => {
   applyConfig();
-  initServices();
   initHeader();
+  initReferenceInteractions();
   initAnchors();
   initIntentLinks();
   initLeadForm();
-  initWorkflow();
   initFAQ();
+  initHeroIntro();
   // Optional animation loading must never delay form initialization.
-  if (typeof window.Motion?.animate === "function")
-    initReveals(
-      performance.getEntriesByName("first-contentful-paint").length === 0,
-    );
+  if (typeof window.Motion?.animate === "function") initReveals();
   else
-    $("#motion-library")?.addEventListener("load", () => initReveals(false), {
+    $("#motion-library")?.addEventListener("load", () => initReveals(), {
       once: true,
     });
   loadPublicContent();

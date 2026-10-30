@@ -29,25 +29,27 @@
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
     <link
       rel="preload"
-      href="assets/fonts/manrope-variable.ttf"
+      href="assets/fonts/manrope-variable.woff2"
       as="font"
-      type="font/ttf"
+      type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="styles.css?v=leads-20261029" />
+    <link rel="stylesheet" href="styles.css?v=reference-local" />
     <script
       id="motion-library"
       src="assets/vendor/motion-14.7.1.js"
+      fetchpriority="low"
       async
     ></script>
-    <script src="script.js?v=leads-20261029" defer></script>
+    <script
+      src="script.js?v=reference-local"
+      fetchpriority="high"
+      defer
+    ></script>
   </head>
   <body data-page="catalog">
     <a class="skip-link" href="#main">Перейти к содержанию</a>
     <header class="site-header" data-header>
-      <span class="header-light" aria-hidden="true"
-        ><span class="header-reflection"></span
-      ></span>
       <div class="header-row">
         <a class="brand" href="index.html" aria-label="Норма — главная"
           >Норма</a
@@ -55,10 +57,9 @@
         <nav class="desktop-nav" aria-label="Основная навигация">
           <span class="nav-indicator" aria-hidden="true"></span
           ><a href="objects.html" data-nav="properties">Объекты</a
-          ><a href="index.html#buy" data-nav="buy">Купить</a
-          ><a href="index.html#sell" data-nav="sell">Продать</a
-          ><a href="index.html#about" data-nav="about">О специалисте</a
-          ><a href="index.html#reviews" data-review-link hidden>Отзывы</a
+          ><a href="index.html#workflow" data-nav="workflow">Услуги</a
+          ><a href="index.html#about" data-nav="about">Обо мне</a
+          ><a href="index.html#faq" data-nav="faq">FAQ</a
           ><a href="index.html#contact" data-nav="contact">Контакты</a>
         </nav>
         <a class="header-cta" href="index.html#contact"
@@ -89,10 +90,9 @@
         </button>
       </div>
       <div class="mobile-menu" id="mobile-menu" hidden>
-        <nav aria-label="Мобильная навигация">
-          <a href="objects.html"
-            >Объекты
-            <svg
+        <nav aria-label="Меню">
+          <a href="index.html#properties"
+            >Объекты<svg
               class="icon"
               width="20"
               height="20"
@@ -103,13 +103,12 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.4"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
-          ><a href="index.html#buy"
-            >Купить
-            <svg
+          ><a href="index.html#workflow"
+            >Услуги<svg
               class="icon"
               width="20"
               height="20"
@@ -120,30 +119,12 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              /></svg></a
-          ><a href="index.html#sell"
-            >Продать
-            <svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M5 12h14m-6-6 6 6-6 6"
-                stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.4"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
           ><a href="index.html#about"
-            >О специалисте
-            <svg
+            >Обо мне<svg
               class="icon"
               width="20"
               height="20"
@@ -154,13 +135,12 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.4"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
-          ><a href="index.html#reviews" data-review-link hidden
-            >Отзывы
-            <svg
+          ><a href="index.html#faq"
+            >FAQ<svg
               class="icon"
               width="20"
               height="20"
@@ -171,13 +151,12 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.4"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
           ><a href="index.html#contact"
-            >Контакты
-            <svg
+            >Контакты<svg
               class="icon"
               width="20"
               height="20"
@@ -188,7 +167,23 @@
               <path
                 d="M5 12h14m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.5"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg></a
+          ><a href="objects.html"
+            >Все направления<svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12h14m-6-6 6 6-6 6"
+                stroke="currentColor"
+                stroke-width="1.4"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg
@@ -284,7 +279,7 @@
         <div class="empty-actions">
           <a
             class="button button-dark"
-            href="index.html?intent=Купить#contact"
+            href="index.html?intent=Купить#contact-form"
             data-intent="Купить"
             data-category-inquiry
             >Обсудить подбор
@@ -319,7 +314,9 @@
           <h2>Не нашли подходящий вариант?</h2>
           <p>Расскажите о своём запросе — обсудим подбор.</p>
         </div>
-        <a class="button button-dark" href="index.html?intent=Купить#contact"
+        <a
+          class="button button-dark"
+          href="index.html?intent=Купить#contact-form"
           >Связаться с Ильсияр
           <svg
             class="icon"
