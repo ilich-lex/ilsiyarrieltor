@@ -3,9 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0D0E10" />
+    <meta name="theme-color" content="#171a18" />
     <meta name="format-detection" content="telephone=no" />
-    <title>Ильсияр Тухватшина — покупка и продажа недвижимости | Норма</title>
+    <title>
+      Ильсияр Тухватшина — покупка и продажа недвижимости | Личный эксперт
+    </title>
     <meta
       name="description"
       content="Покупка, продажа и сопровождение сделок по России. Ильсияр Тухватшина, эксперт по недвижимости АН «Норма». Подбор объектов и помощь с продажей."
@@ -15,7 +17,7 @@
     <meta property="og:locale" content="ru_RU" />
     <meta
       property="og:title"
-      content="Ильсияр Тухватшина — покупка и продажа недвижимости | Норма"
+      content="Ильсияр Тухватшина — покупка и продажа недвижимости | Личный эксперт"
     />
     <meta
       property="og:description"
@@ -27,6 +29,12 @@
       content="https://ilsiyar.ru/assets/images/photo_2026-08-23_15-43-49.jpg"
     />
     <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+    <link
+      rel="preload"
+      as="image"
+      href="assets/images/photo_2026-08-23_15-43-49.jpg"
+      fetchpriority="high"
+    />
     <link
       rel="preload"
       href="assets/fonts/manrope-variable.woff2"
@@ -41,15 +49,7 @@
       type="font/woff2"
       crossorigin
     />
-    <link rel="stylesheet" href="styles.css?v=reference-local" />
-    <link
-      rel="preload"
-      href="assets/images/portrait-mask.svg"
-      as="image"
-      type="image/svg+xml"
-      crossorigin
-      fetchpriority="high"
-    />
+    <link rel="stylesheet" href="styles.css?v=signature-local" />
     <script
       id="motion-library"
       src="assets/vendor/motion-14.7.1.js"
@@ -57,7 +57,7 @@
       async
     ></script>
     <script
-      src="script.js?v=reference-local"
+      src="script.js?v=signature-local"
       fetchpriority="high"
       defer
     ></script>
@@ -66,14 +66,20 @@
     <a class="skip-link" href="#main">Перейти к содержанию</a>
     <header class="site-header" data-header>
       <div class="header-row">
-        <a class="brand" href="#top" aria-label="Норма — главная">Норма</a>
+        <a
+          class="wordmark"
+          href="#top"
+          aria-label="Ильсияр Тухватшина — главная"
+          ><span class="wordmark-initials" aria-hidden="true">ИТ</span
+          ><span class="wordmark-name">Ильсияр<span>Тухватшина</span></span></a
+        >
         <nav class="desktop-nav" aria-label="Основная навигация">
           <span class="nav-indicator" aria-hidden="true"></span
-          ><a href="#properties" data-nav="properties">Объекты</a
-          ><a href="#workflow" data-nav="workflow">Услуги</a
-          ><a href="#about" data-nav="about">Обо мне</a
-          ><a href="#faq" data-nav="faq">FAQ</a
-          ><a href="#contact" data-nav="contact">Контакты</a>
+          ><a href="#properties" data-nav="properties">Недвижимость</a
+          ><a href="#services" data-nav="services">Купить / продать</a
+          ><a href="#about" data-nav="about">Об Ильсияр</a
+          ><a href="#workflow" data-nav="workflow">Этапы</a
+          ><a href="#faq" data-nav="faq">Вопросы</a>
         </nav>
         <a class="header-cta" href="#contact"
           >Связаться
@@ -86,7 +92,7 @@
             aria-hidden="true"
           >
             <path
-              d="m6 18 12-12M7 6h11v11"
+              d="M6 18 18 6M6 6h12v12"
               stroke="currentColor"
               stroke-width="1.5"
               stroke-linecap="round"
@@ -95,17 +101,17 @@
         ><button
           class="menu-toggle"
           type="button"
-          aria-expanded="false"
-          aria-controls="mobile-menu"
           aria-label="Открыть меню"
+          aria-controls="mobile-menu"
+          aria-expanded="false"
         >
           <span></span><span></span>
         </button>
       </div>
       <div class="mobile-menu" id="mobile-menu" hidden>
-        <nav aria-label="Меню">
+        <nav aria-label="Мобильная навигация">
           <a href="#properties"
-            >Объекты<svg
+            ><span class="menu-index">01</span>Недвижимость<svg
               class="icon"
               width="20"
               height="20"
@@ -114,14 +120,14 @@
               aria-hidden="true"
             >
               <path
-                d="M5 12h14m-6-6 6 6-6 6"
+                d="M4 12h15m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.4"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
-          ><a href="#workflow"
-            >Услуги<svg
+          ><a href="#services"
+            ><span class="menu-index">02</span>Купить / продать<svg
               class="icon"
               width="20"
               height="20"
@@ -130,14 +136,14 @@
               aria-hidden="true"
             >
               <path
-                d="M5 12h14m-6-6 6 6-6 6"
+                d="M4 12h15m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.4"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
           ><a href="#about"
-            >Обо мне<svg
+            ><span class="menu-index">03</span>Об Ильсияр<svg
               class="icon"
               width="20"
               height="20"
@@ -146,14 +152,30 @@
               aria-hidden="true"
             >
               <path
-                d="M5 12h14m-6-6 6 6-6 6"
+                d="M4 12h15m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.4"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg></a
+          ><a href="#workflow"
+            ><span class="menu-index">04</span>Этапы<svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M4 12h15m-6-6 6 6-6 6"
+                stroke="currentColor"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
           ><a href="#faq"
-            >FAQ<svg
+            ><span class="menu-index">05</span>Вопросы<svg
               class="icon"
               width="20"
               height="20"
@@ -162,30 +184,14 @@
               aria-hidden="true"
             >
               <path
-                d="M5 12h14m-6-6 6 6-6 6"
+                d="M4 12h15m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.4"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              /></svg></a
-          ><a href="#contact"
-            >Контакты<svg
-              class="icon"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path
-                d="M5 12h14m-6-6 6 6-6 6"
-                stroke="currentColor"
-                stroke-width="1.4"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
           ><a href="objects.html"
-            >Все направления<svg
+            ><span class="menu-index">06</span>Открыть каталог<svg
               class="icon"
               width="20"
               height="20"
@@ -194,365 +200,56 @@
               aria-hidden="true"
             >
               <path
-                d="M5 12h14m-6-6 6 6-6 6"
+                d="M4 12h15m-6-6 6 6-6 6"
                 stroke="currentColor"
-                stroke-width="1.4"
+                stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg
           ></a>
         </nav>
-        <a class="menu-phone" href="tel:+79374848565">8 937 484-85-65</a>
+        <a class="menu-phone" href="tel:+79374848565" data-contact="phone"
+          >8 937 484-85-65</a
+        >
+        <p>Личный эксперт по недвижимости</p>
       </div>
     </header>
     <main id="main">
-      <section class="hero" id="top" aria-labelledby="hero-title">
-        <picture class="hero-background"
-          ><source
-            media="(max-width: 700px)"
-            type="image/webp"
-            srcset="assets/images/hero-room-960.webp" />
-          <source
-            type="image/webp"
-            srcset="
-              assets/images/hero-room-960.webp   960w,
-              assets/images/hero-room-1920.webp 1920w
-            "
-            sizes="100vw" />
-          <img
-            src="assets/images/hero-room-1920.webp"
-            alt=""
-            width="1920"
-            height="1080"
-            fetchpriority="high"
-            decoding="async"
-        /></picture>
-        <img
-          class="hero-person"
-          src="assets/images/photo_2026-08-23_15-43-49.jpg"
-          width="853"
-          height="1280"
-          alt="Ильсияр Тухватшина — эксперт по недвижимости"
-          fetchpriority="high"
-          decoding="async"
-        />
-        <div class="shell hero-content">
-          <p class="hero-eyebrow">Ильсияр Тухватшина · АН «Норма»</p>
-          <h1 id="hero-title">
-            <span>Покупка и</span><span>продажа</span><span>недвижимости</span>
-          </h1>
-          <p class="hero-description">
-            Помогаю подобрать объект, подготовить недвижимость к продаже и
-            организовать сделку.
-          </p>
-          <div class="hero-actions">
-            <a
-              class="button button-light"
-              href="#contact-form"
-              data-intent="Купить"
-              >Обсудить покупку<svg
-                class="icon"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 12h14m-6-6 6 6-6 6"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg></a
-            ><a
-              class="button button-outline"
-              href="#contact-form"
-              data-intent="Продать"
-              >Обсудить продажу<svg
-                class="icon"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="M5 12h14m-6-6 6 6-6 6"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                /></svg
-            ></a>
-          </div>
-          <p class="hero-foot">
-            Личное сопровождение <span aria-hidden="true">·</span> Работа по
-            России
-          </p>
-        </div>
-      </section>
-      <section
-        class="directions"
-        id="properties"
-        aria-labelledby="directions-title"
-      >
-        <div class="directions-heading">
-          <h2 id="directions-title">Что вы ищете?</h2>
-          <details class="more-directions">
-            <summary>Все направления <span aria-hidden="true">+</span></summary>
-            <div>
-              <a
-                href="index.html?intent=Купить&category=newbuild#contact-form"
-                data-inquiry-category="newbuild"
-                >Новостройки<svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg></a
-              ><a
-                href="index.html?intent=Купить&category=storage#contact-form"
-                data-inquiry-category="storage"
-                >Парковки и кладовые<svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg></a
-              ><a href="objects.html"
-                >Открыть каталог<svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg
-              ></a>
-              <p>Фотографии иллюстрируют направления подбора.</p>
-            </div>
-          </details>
-        </div>
-        <div class="directions-grid">
-          <a
-            class="category-panel"
-            href="index.html?intent=Купить&category=apartment#contact-form"
-            data-inquiry-category="apartment"
-            ><picture class="category-image"
-              ><source
-                type="image/webp"
-                srcset="
-                  assets/images/category-apartment-480.webp 480w,
-                  assets/images/category-apartment-800.webp 800w
-                "
-                sizes="(max-width: 700px) 50vw, 25vw" />
-              <img
-                src="assets/images/category-apartment-800.webp"
-                alt=""
-                width="800"
-                height="960"
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-            /></picture>
-            <div class="category-copy">
-              <h3>Квартиры</h3>
-              <p>В новостройках и на вторичном рынке</p>
-              <span class="category-arrow" aria-hidden="true"
-                ><svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg
-              ></span></div></a
-          ><a
-            class="category-panel"
-            href="index.html?intent=Купить&category=house#contact-form"
-            data-inquiry-category="house"
-            ><picture class="category-image"
-              ><source
-                type="image/webp"
-                srcset="
-                  assets/images/category-house-480.webp 480w,
-                  assets/images/category-house-800.webp 800w
-                "
-                sizes="(max-width: 700px) 50vw, 25vw" />
-              <img
-                src="assets/images/category-house-800.webp"
-                alt=""
-                width="800"
-                height="960"
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-            /></picture>
-            <div class="category-copy">
-              <h3>Дома</h3>
-              <p>Подбор по месту, бюджету и требованиям</p>
-              <span class="category-arrow" aria-hidden="true"
-                ><svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg
-              ></span></div></a
-          ><a
-            class="category-panel"
-            href="index.html?intent=Купить&category=land#contact-form"
-            data-inquiry-category="land"
-            ><picture class="category-image"
-              ><source
-                type="image/webp"
-                srcset="
-                  assets/images/category-land-480.webp 480w,
-                  assets/images/category-land-800.webp 800w
-                "
-                sizes="(max-width: 700px) 50vw, 25vw" />
-              <img
-                src="assets/images/category-land-800.webp"
-                alt=""
-                width="800"
-                height="960"
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-            /></picture>
-            <div class="category-copy">
-              <h3>Участки</h3>
-              <p>Подбор под вашу задачу</p>
-              <span class="category-arrow" aria-hidden="true"
-                ><svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg
-              ></span></div></a
-          ><a
-            class="category-panel"
-            href="index.html?intent=Купить&category=commercial#contact-form"
-            data-inquiry-category="commercial"
-            ><picture class="category-image"
-              ><source
-                type="image/webp"
-                srcset="
-                  assets/images/category-commercial-480.webp 480w,
-                  assets/images/category-commercial-800.webp 800w
-                "
-                sizes="(max-width: 700px) 50vw, 25vw" />
-              <img
-                src="assets/images/category-commercial-800.webp"
-                alt=""
-                width="800"
-                height="960"
-                loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-            /></picture>
-            <div class="category-copy">
-              <h3>Коммерческие помещения</h3>
-              <p>Подбор под задачи бизнеса</p>
-              <span class="category-arrow" aria-hidden="true"
-                ><svg
-                  class="icon"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M5 12h14m-6-6 6 6-6 6"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  /></svg
-              ></span></div
-          ></a>
-        </div>
-      </section>
-      <section class="about-section" id="about" aria-labelledby="about-title">
-        <div class="about-layout" data-reference-about>
-          <figure class="about-photo">
+      <section class="signature-hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-grain" aria-hidden="true"></div>
+        <div class="shell hero-canvas">
+          <p class="hero-edition">Личный эксперт<br />по недвижимости</p>
+          <span class="hero-line" aria-hidden="true"></span>
+          <figure class="signature-portrait">
             <img
               src="assets/images/photo_2026-08-23_15-43-49.jpg"
               alt="Ильсияр Тухватшина"
               width="853"
               height="1280"
-              loading="lazy"
+              fetchpriority="high"
+              decoding="async"
             />
+            <figcaption>Лично веду вашу задачу</figcaption>
           </figure>
-          <div class="about-copy">
-            <div class="about-heading">
-              <p class="section-kicker">О специалисте</p>
-              <h2 id="about-title">Ильсияр<br />Тухватшина</h2>
-              <p class="about-role">Эксперт по недвижимости · АН «Норма»</p>
-            </div>
-            <p class="about-description">
-              Лично веду покупку или продажу: обсуждаю задачу, координирую
-              участников и помогаю подготовиться к сделке.
+          <h1
+            class="signature-name"
+            id="hero-title"
+            aria-label="Ильсияр Тухватшина"
+            data-magic-text="word-slide-up"
+            data-signature-text
+          >
+            <span class="name-first" aria-hidden="true">Ильсияр</span
+            ><span class="name-last" aria-hidden="true">Тухватшина</span>
+          </h1>
+          <div class="hero-introduction">
+            <p>Покупка. Продажа.<br />Сопровождение сделки.</p>
+            <p>
+              Помогаю купить или продать недвижимость и организовать сделку.
             </p>
-            <a
-              class="button button-dark"
-              href="#contact-form"
-              data-intent="Другое"
-              >Задать вопрос<svg
+          </div>
+          <div class="signature-actions">
+            <a class="button button-ivory" href="#buy" data-intent="Купить"
+              >Купить недвижимость<svg
                 class="icon"
                 width="20"
                 height="20"
@@ -561,78 +258,98 @@
                 aria-hidden="true"
               >
                 <path
-                  d="M5 12h14m-6-6 6 6-6 6"
+                  d="M4 12h15m-6-6 6 6-6 6"
                   stroke="currentColor"
-                  stroke-width="1.4"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg></a
+            ><a class="button button-line" href="#sell" data-intent="Продать"
+              >Продать недвижимость<svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 12h15m-6-6 6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 /></svg
             ></a>
           </div>
-          <div class="about-points">
-            <div class="about-point">
-              <span class="point-index" aria-hidden="true">01</span>
-              <div>
-                <h3>Общаетесь со мной</h3>
-                <p>Уточняем задачу и согласуем дальнейшие действия.</p>
-              </div>
-            </div>
-            <div class="about-point">
-              <span class="point-index" aria-hidden="true">02</span>
-              <div>
-                <h3>Подбор или продажа</h3>
-                <p>
-                  Работаем с предложениями или готовим ваш объект к продаже.
-                </p>
-              </div>
-            </div>
-            <div class="about-point">
-              <span class="point-index" aria-hidden="true">03</span>
-              <div>
-                <h3>Другой регион</h3>
-                <p>Формат сопровождения обсуждаем с учётом города и задачи.</p>
-              </div>
-            </div>
+          <div class="hero-colophon">
+            <span>Ильсияр Тухватшина</span><span>Работа по России</span
+            ><span>АН «Норма»</span>
+          </div>
+          <div class="hero-plan" aria-hidden="true">
+            <svg
+              class="architectural-plan plan-hero"
+              viewBox="0 0 600 520"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                class="plan-outline"
+                d="M70 70h430v330H70zM70 220h190V70m0 150h240M260 220v180M390 220v180M70 330h190M145 220v110"
+                stroke="currentColor"
+                stroke-width="1.2"
+              />
+              <path
+                d="M70 40h430M40 70v330M530 70v330M70 430h430M66 34v12m438-12v12M34 66h12m-12 338h12M524 66h12m-12 338h12M66 424v12m438-12v12"
+                stroke="currentColor"
+                stroke-width=".7"
+              />
+              <path
+                d="M260 220a60 60 0 0 1 60 60h-60m130 10a45 45 0 0 1 45-45v45"
+                stroke="currentColor"
+                stroke-width=".8"
+              />
+              <path
+                d="M260 168v-35m-95 87h-35m260 110v35"
+                stroke="var(--accent)"
+                stroke-width="5"
+              />
+              <path
+                d="M70 400h90m340-330v90"
+                stroke="currentColor"
+                stroke-width="4"
+              />
+              <text
+                x="70"
+                y="483"
+                fill="currentColor"
+                font-family="Manrope, sans-serif"
+                font-size="10"
+                letter-spacing="3"
+              >
+                ЛИЧНЫЙ МАСШТАБ
+              </text>
+            </svg>
           </div>
         </div>
       </section>
       <section
-        class="workflow-section"
-        id="workflow"
-        aria-labelledby="workflow-title"
+        class="property-orbit"
+        id="properties"
+        aria-labelledby="orbit-title"
       >
-        <picture class="workflow-background"
-          ><source
-            media="(max-width: 700px)"
-            type="image/webp"
-            srcset="assets/images/hero-room-960.webp" />
-          <source
-            type="image/webp"
-            srcset="
-              assets/images/hero-room-960.webp   960w,
-              assets/images/hero-room-1920.webp 1920w
-            "
-            sizes="(max-width: 700px) 100vw, 70vw" />
-          <img
-            src="assets/images/hero-room-1920.webp"
-            alt=""
-            width="1920"
-            height="1080"
-            loading="lazy"
-            fetchpriority="low"
-            decoding="async"
-        /></picture>
-        <div class="shell">
-          <div class="workflow-heading">
-            <div>
-              <h2 id="workflow-title">Как проходит работа</h2>
-              <p>
-                После первого разговора согласуем порядок действий под вашу
-                задачу.
-              </p>
-            </div>
-            <a class="button button-light" href="#contact-form"
-              >Обсудить задачу<svg
+        <div class="shell orbit-heading">
+          <div>
+            <p class="section-kicker">01 / Недвижимость</p>
+            <h2 id="orbit-title">
+              У каждого запроса<br /><span>— свой масштаб.</span>
+            </h2>
+          </div>
+          <div class="orbit-note">
+            <p>Выберите тип недвижимости — обсудим подбор.</p>
+            <a class="text-link" href="objects.html"
+              >Открыть каталог
+              <svg
                 class="icon"
                 width="20"
                 height="20"
@@ -641,98 +358,215 @@
                 aria-hidden="true"
               >
                 <path
-                  d="M5 12h14m-6-6 6 6-6 6"
+                  d="M6 18 18 6M6 6h12v12"
                   stroke="currentColor"
-                  stroke-width="1.4"
+                  stroke-width="1.5"
                   stroke-linecap="round"
                   stroke-linejoin="round"
                 /></svg
             ></a>
           </div>
-          <ol class="process-timeline" data-reference-process>
-            <li class="process-step">
-              <span class="process-number">01</span
-              ><span class="process-line" aria-hidden="true"></span>
-              <h3>Обсуждаем задачу</h3>
-              <p>Город, бюджет, сроки и исходная ситуация.</p>
-            </li>
-            <li class="process-step">
-              <span class="process-number">02</span
-              ><span class="process-line" aria-hidden="true"></span>
-              <h3>Готовим варианты</h3>
-              <p>Подбираем предложения или готовим объект к продаже.</p>
-            </li>
-            <li class="process-step">
-              <span class="process-number">03</span
-              ><span class="process-line" aria-hidden="true"></span>
-              <h3>Проводим переговоры</h3>
-              <p>Организуем просмотры и обсуждаем условия.</p>
-            </li>
-            <li class="process-step">
-              <span class="process-number">04</span>
-              <h3>Готовимся к сделке</h3>
-              <p>Согласуем документы и порядок оформления.</p>
-            </li>
-          </ol>
         </div>
-      </section>
-      <section class="contact-band" aria-labelledby="band-title">
-        <picture class="band-background"
-          ><source
-            media="(max-width: 700px)"
-            type="image/webp"
-            srcset="assets/images/contact-room-800.webp" />
-          <source
-            type="image/webp"
-            srcset="
-              assets/images/contact-room-800.webp   800w,
-              assets/images/contact-room-1600.webp 1600w
-            "
-            sizes="(max-width: 700px) 100vw, 70vw" />
-          <img
-            src="assets/images/contact-room-1600.webp"
-            alt=""
-            width="1600"
-            height="650"
-            loading="lazy"
-            fetchpriority="low"
-            decoding="async"
-        /></picture>
-        <div class="shell band-layout">
-          <div class="band-copy">
-            <h2 id="band-title">Расскажите о недвижимости и задаче</h2>
-            <p>
-              Укажите город, хотите купить или продать, и что для вас важно.
-            </p>
+        <div
+          class="arc-carousel"
+          data-arc-carousel
+          role="region"
+          aria-roledescription="карусель"
+          aria-label="Направления недвижимости"
+          tabindex="0"
+        >
+          <div class="arc-stage" data-arc-stage>
+            <div class="arc-guide" aria-hidden="true"></div>
+            <a
+              class="arc-card"
+              href="index.html?intent=Купить&amp;category=apartment#contact-form"
+              data-arc-card
+              data-category-key="apartment"
+              aria-label="Квартиры — обсудить подбор"
+              ><picture
+                ><source
+                  srcset="
+                    assets/images/category-apartment-480.webp 480w,
+                    assets/images/category-apartment-800.webp 800w
+                  "
+                  sizes="(max-width:700px) 270px, 360px" />
+                <img
+                  src="assets/images/category-apartment-800.webp"
+                  alt=""
+                  width="800"
+                  height="960"
+                  loading="lazy"
+                  draggable="false" /></picture
+              ><span class="arc-card-shade"></span
+              ><span class="arc-card-number">01</span>
+              <div class="arc-card-copy">
+                <h3>Квартиры</h3>
+                <p>В новостройках и на вторичном рынке</p>
+                <span class="arc-card-action"
+                  >Обсудить подбор
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></span></div></a
+            ><a
+              class="arc-card"
+              href="index.html?intent=Купить&amp;category=house#contact-form"
+              data-arc-card
+              data-category-key="house"
+              aria-label="Дома — обсудить подбор"
+              ><picture
+                ><source
+                  srcset="
+                    assets/images/category-house-480.webp 480w,
+                    assets/images/category-house-800.webp 800w
+                  "
+                  sizes="(max-width:700px) 270px, 360px" />
+                <img
+                  src="assets/images/category-house-800.webp"
+                  alt=""
+                  width="800"
+                  height="960"
+                  loading="lazy"
+                  draggable="false" /></picture
+              ><span class="arc-card-shade"></span
+              ><span class="arc-card-number">02</span>
+              <div class="arc-card-copy">
+                <h3>Дома</h3>
+                <p>По месту, бюджету и вашим требованиям</p>
+                <span class="arc-card-action"
+                  >Обсудить подбор
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></span></div></a
+            ><a
+              class="arc-card"
+              href="index.html?intent=Купить&amp;category=land#contact-form"
+              data-arc-card
+              data-category-key="land"
+              aria-label="Земельные участки — обсудить подбор"
+              ><picture
+                ><source
+                  srcset="
+                    assets/images/category-land-480.webp 480w,
+                    assets/images/category-land-800.webp 800w
+                  "
+                  sizes="(max-width:700px) 270px, 360px" />
+                <img
+                  src="assets/images/category-land-800.webp"
+                  alt=""
+                  width="800"
+                  height="960"
+                  loading="lazy"
+                  draggable="false" /></picture
+              ><span class="arc-card-shade"></span
+              ><span class="arc-card-number">03</span>
+              <div class="arc-card-copy">
+                <h3>Земельные участки</h3>
+                <p>Подбор под вашу задачу</p>
+                <span class="arc-card-action"
+                  >Обсудить подбор
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></span></div></a
+            ><a
+              class="arc-card"
+              href="index.html?intent=Купить&amp;category=commercial#contact-form"
+              data-arc-card
+              data-category-key="commercial"
+              aria-label="Коммерческая недвижимость — обсудить подбор"
+              ><picture
+                ><source
+                  srcset="
+                    assets/images/category-commercial-480.webp 480w,
+                    assets/images/category-commercial-800.webp 800w
+                  "
+                  sizes="(max-width:700px) 270px, 360px" />
+                <img
+                  src="assets/images/category-commercial-800.webp"
+                  alt=""
+                  width="800"
+                  height="960"
+                  loading="lazy"
+                  draggable="false" /></picture
+              ><span class="arc-card-shade"></span
+              ><span class="arc-card-number">04</span>
+              <div class="arc-card-copy">
+                <h3>Коммерческая недвижимость</h3>
+                <p>Помещения под задачи бизнеса</p>
+                <span class="arc-card-action"
+                  >Обсудить подбор
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></span></div
+            ></a>
           </div>
-          <div class="brief-panel">
-            <div>
-              <h3>Город</h3>
-              <p>Где находится объект или ведётся поиск</p>
+          <div class="shell orbit-controls">
+            <div class="orbit-position">
+              <span data-arc-current>01</span><span class="orbit-rule"></span
+              ><span>04</span>
             </div>
-            <div>
-              <h3>Задача</h3>
-              <p>Покупка, продажа или предварительное обсуждение</p>
+            <div class="orbit-active">
+              <p data-arc-title>Квартиры</p>
+              <span data-arc-label>В новостройках и на вторичном рынке</span>
             </div>
-            <div>
-              <h3>Сроки</h3>
-              <p>Когда планируете начать</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section class="faq-contact" id="contact">
-        <div class="shell faq-contact-grid">
-          <div class="faq-column" id="faq">
-            <div class="faq-heading">
-              <h2>Частые вопросы</h2>
+            <div class="orbit-arrows" data-arc-controls hidden>
               <button
-                class="text-link"
-                type="button"
-                data-expand-faq
-                aria-pressed="false"
+                class="circle-control is-prev"
+                data-arc-prev
+                aria-label="Предыдущее направление"
               >
-                Все ответы<svg
+                <svg
                   class="icon"
                   width="20"
                   height="20"
@@ -741,105 +575,1043 @@
                   aria-hidden="true"
                 >
                   <path
-                    d="M5 12h14m-6-6 6 6-6 6"
+                    d="M4 12h15m-6-6 6 6-6 6"
                     stroke="currentColor"
-                    stroke-width="1.4"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg></button
+              ><button
+                class="circle-control"
+                data-arc-next
+                aria-label="Следующее направление"
+              >
+                <svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 12h15m-6-6 6 6-6 6"
+                    stroke="currentColor"
+                    stroke-width="1.5"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                   />
                 </svg>
               </button>
             </div>
-            <div class="faq-list">
-              <details>
-                <summary>
-                  Можно обратиться с объектом в другом регионе?<span
-                    class="faq-plus"
-                    aria-hidden="true"
-                  ></span>
-                </summary>
-                <div>
-                  <p>
-                    Да. Работа выстраивается по России. Формат сопровождения
-                    обсудим с учётом региона и задачи.
-                  </p>
-                </div>
-              </details>
-              <details>
-                <summary>
-                  Если я ещё не решил продавать?<span
-                    class="faq-plus"
-                    aria-hidden="true"
-                  ></span>
-                </summary>
-                <div>
-                  <p>
-                    Можно начать с обсуждения объекта и рыночной ситуации, не
-                    принимая решение о продаже заранее.
-                  </p>
-                </div>
-              </details>
-              <details>
-                <summary>
-                  Вы работаете с новостройками и ипотекой?<span
-                    class="faq-plus"
-                    aria-hidden="true"
-                  ></span>
-                </summary>
-                <div>
-                  <p>
-                    Помогаю сравнить проекты и условия застройщиков. При
-                    необходимости подключается ипотечный брокер.
-                  </p>
-                </div>
-              </details>
-              <details>
-                <summary>
-                  Поможете оценить объект перед продажей?<span
-                    class="faq-plus"
-                    aria-hidden="true"
-                  ></span>
-                </summary>
-                <div>
-                  <p>
-                    Да. Обсудим характеристики объекта, текущие предложения на
-                    рынке и ориентир для продажи.
-                  </p>
-                </div>
-              </details>
+            <a
+              class="orbit-inquiry text-link"
+              href="index.html?intent=Купить&amp;category=apartment#contact-form"
+              data-inquiry-category="apartment"
+              data-arc-inquiry
+              >Обсудить подбор
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 18 18 6M6 6h12v12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg
+            ></a>
+          </div>
+          <p class="sr-only" data-arc-announcement aria-live="polite"></p>
+        </div>
+        <div class="shell orbit-fineprint">
+          <p>
+            Фотографии иллюстрируют направления работы, а не опубликованные
+            объявления.
+          </p>
+          <details class="more-directions">
+            <summary>
+              Другие направления
+              <svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M6 18 18 6M6 6h12v12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </summary>
+            <div>
+              <a
+                href="index.html?intent=Купить&amp;category=newbuild#contact-form"
+                data-inquiry-category="newbuild"
+                >Новостройки</a
+              ><a
+                href="index.html?intent=Купить&amp;category=storage#contact-form"
+                data-inquiry-category="storage"
+                >Парковки и кладовые</a
+              ><a href="objects.html">Весь каталог</a>
+            </div>
+          </details>
+        </div>
+      </section>
+      <section
+        class="service-section"
+        id="services"
+        aria-labelledby="services-title"
+      >
+        <span class="anchor-alias" id="buy"></span
+        ><span class="anchor-alias" id="sell"></span>
+        <div class="shell">
+          <div class="service-heading">
+            <div>
+              <p class="section-kicker">02 / Ваша задача</p>
+              <h2 id="services-title">Разные задачи.<br />Личное участие.</h2>
+            </div>
+            <div
+              class="service-switch"
+              role="tablist"
+              aria-label="Покупка или продажа"
+              data-service-tabs
+              hidden
+            >
+              <span class="service-switch-marker" aria-hidden="true"></span
+              ><button
+                id="tab-buy"
+                role="tab"
+                aria-selected="true"
+                aria-controls="service-buy"
+                data-service-tab="buy"
+              >
+                Покупаю</button
+              ><button
+                id="tab-sell"
+                role="tab"
+                aria-selected="false"
+                aria-controls="service-sell"
+                data-service-tab="sell"
+              >
+                Продаю
+              </button>
             </div>
           </div>
-          <div class="contact-panel">
-            <picture class="contact-background"
-              ><source
-                media="(max-width: 700px)"
-                type="image/webp"
-                srcset="assets/images/contact-room-800.webp" />
-              <source
-                type="image/webp"
-                srcset="
-                  assets/images/contact-room-800.webp   800w,
-                  assets/images/contact-room-1600.webp 1600w
-                "
-                sizes="(max-width: 700px) 100vw, 70vw" />
+          <div class="service-scenes" data-services>
+            <article
+              class="service-scene scene-buy"
+              id="service-buy"
+              role="tabpanel"
+              aria-labelledby="tab-buy"
+              data-service-panel="buy"
+            >
+              <div class="service-scene-title">
+                <span class="service-sign">Покупка</span>
+                <h3>Выбрать объект.<br />Разобраться<br />в деталях.</h3>
+                <p>
+                  Уточняем, что вам нужно. Сравниваем предложения и согласуем
+                  дальнейшие действия.
+                </p>
+                <a
+                  class="button button-dark"
+                  href="#contact-form"
+                  data-intent="Купить"
+                  >Обсудить покупку<svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12h15m-6-6 6 6-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></a>
+              </div>
+              <ol class="service-details">
+                <li>
+                  <span>01</span>
+                  <div>
+                    <h4>Сформировать запрос</h4>
+                    <p>Город, бюджет, тип объекта и важные для вас условия.</p>
+                  </div>
+                </li>
+                <li>
+                  <span>02</span>
+                  <div>
+                    <h4>Сравнить варианты</h4>
+                    <p>
+                      Подбор предложений, организация просмотров и вопросы по
+                      объекту.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span>03</span>
+                  <div>
+                    <h4>Подготовиться к покупке</h4>
+                    <p>
+                      Обсуждение условий, координация участников и сопровождение
+                      сделки.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="service-art" aria-hidden="true">
+                <svg
+                  class="architectural-plan plan-buy"
+                  viewBox="0 0 600 520"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    class="plan-outline"
+                    d="M70 70h430v330H70zM70 220h190V70m0 150h240M260 220v180M390 220v180M70 330h190M145 220v110"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                  />
+                  <path
+                    d="M70 40h430M40 70v330M530 70v330M70 430h430M66 34v12m438-12v12M34 66h12m-12 338h12M524 66h12m-12 338h12M66 424v12m438-12v12"
+                    stroke="currentColor"
+                    stroke-width=".7"
+                  />
+                  <path
+                    d="M260 220a60 60 0 0 1 60 60h-60m130 10a45 45 0 0 1 45-45v45"
+                    stroke="currentColor"
+                    stroke-width=".8"
+                  />
+                  <path
+                    d="M260 168v-35m-95 87h-35m260 110v35"
+                    stroke="var(--accent)"
+                    stroke-width="5"
+                  />
+                  <path
+                    d="M70 400h90m340-330v90"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  />
+                  <text
+                    x="70"
+                    y="483"
+                    fill="currentColor"
+                    font-family="Manrope, sans-serif"
+                    font-size="10"
+                    letter-spacing="3"
+                  >
+                    ЛИЧНЫЙ МАСШТАБ
+                  </text></svg
+                ><span>От требований к выбору</span>
+              </div>
+            </article>
+            <article
+              class="service-scene scene-sell"
+              id="service-sell"
+              role="tabpanel"
+              aria-labelledby="tab-sell"
+              data-service-panel="sell"
+            >
+              <div class="service-scene-title">
+                <span class="service-sign">Продажа</span>
+                <h3>Подготовить объект.<br />Организовать<br />продажу.</h3>
+                <p>
+                  Обсуждаем недвижимость и ситуацию на рынке. Определяем, что
+                  нужно сделать до размещения.
+                </p>
+                <a
+                  class="button button-ivory"
+                  href="#contact-form"
+                  data-intent="Продать"
+                  >Обсудить продажу<svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12h15m-6-6 6 6-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></a>
+              </div>
+              <ol class="service-details">
+                <li>
+                  <span>01</span>
+                  <div>
+                    <h4>Обсудить объект</h4>
+                    <p>
+                      Характеристики, документы, ожидания и ориентир стоимости.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span>02</span>
+                  <div>
+                    <h4>Подготовить размещение</h4>
+                    <p>
+                      Материалы об объекте и организация работы с обращениями
+                      покупателей.
+                    </p>
+                  </div>
+                </li>
+                <li>
+                  <span>03</span>
+                  <div>
+                    <h4>Согласовать условия</h4>
+                    <p>
+                      Просмотры, переговоры и сопровождение дальнейшего
+                      оформления.
+                    </p>
+                  </div>
+                </li>
+              </ol>
+              <div class="service-art sell-art" aria-hidden="true">
+                <span class="sell-art-rule"></span
+                ><strong>Ваш<br />объект</strong>
+                <div>
+                  <span>Материалы</span><span>Просмотры</span
+                  ><span>Условия</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section
+        class="personal-section"
+        id="about"
+        aria-labelledby="about-title"
+      >
+        <div class="shell personal-layout" data-personal-reveal>
+          <div class="personal-image-column">
+            <p class="section-kicker">03 / Об Ильсияр</p>
+            <figure class="personal-portrait">
               <img
-                src="assets/images/contact-room-1600.webp"
-                alt=""
-                width="1600"
-                height="650"
+                src="assets/images/photo_2026-08-23_15-43-49.jpg"
+                alt="Ильсияр Тухватшина — личный эксперт по недвижимости"
+                width="853"
+                height="1280"
                 loading="lazy"
-                fetchpriority="low"
-                decoding="async"
-            /></picture>
-            <div class="contact-panel-content">
-              <p class="section-kicker">На связи</p>
-              <h2>Связаться<br />с Ильсияр</h2>
-              <p class="contact-lead">
-                Напишите о своей задаче или оставьте контакты для ответа.
+              />
+              <figcaption>
+                <span>Ильсияр Тухватшина</span
+                ><span>Эксперт по недвижимости</span>
+              </figcaption>
+            </figure>
+            <span class="personal-image-rule" aria-hidden="true"></span>
+          </div>
+          <div class="personal-copy">
+            <h2 id="about-title">Ильсияр<br /><span>Тухватшина.</span></h2>
+            <p class="personal-statement">
+              В сделке важно понимать,<br />что происходит дальше.
+            </p>
+            <div class="personal-body">
+              <p>
+                Лично веду покупку или продажу: обсуждаю задачу, координирую
+                участников и помогаю подготовиться к сделке.
               </p>
-              <details class="contact-form-disclosure" id="contact-form">
-                <summary class="button button-light">
-                  Оставить обращение<svg
+              <p>
+                Работаю по России. Формат сопровождения в другом регионе
+                согласуем с учётом города, объекта и вашей ситуации.
+              </p>
+            </div>
+            <div class="personal-meta">
+              <span>Личное сопровождение</span><span>АН «Норма»</span>
+            </div>
+            <a
+              class="button button-dark"
+              href="#contact-form"
+              data-intent="Другое"
+              >Познакомимся с вашей задачей<svg
+                class="icon"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M4 12h15m-6-6 6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg
+            ></a>
+          </div>
+          <div class="personal-caption" aria-hidden="true">
+            Личный контакт.<br />Понятные действия.
+          </div>
+        </div>
+      </section>
+      <section
+        class="album-section"
+        id="workflow"
+        aria-labelledby="workflow-title"
+      >
+        <div class="shell album-layout">
+          <div class="album-intro">
+            <p class="section-kicker">04 / Порядок действий</p>
+            <h2 id="workflow-title">Шаг за<br /><span>шагом.</span></h2>
+            <p>
+              После первого разговора согласуем порядок работы под вашу задачу.
+            </p>
+            <div class="album-navigation" data-album-controls hidden>
+              <div class="album-counter">
+                <span data-album-current>01</span><span>/ 04</span>
+              </div>
+              <div class="album-arrows">
+                <button
+                  class="circle-control is-prev"
+                  data-album-prev
+                  aria-label="Предыдущий этап"
+                >
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12h15m-6-6 6 6-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg></button
+                ><button
+                  class="circle-control"
+                  data-album-next
+                  aria-label="Следующий этап"
+                >
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M4 12h15m-6-6 6 6-6 6"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+              <div class="album-tabs" aria-label="Выбрать этап">
+                <button
+                  data-album-tab="0"
+                  aria-label="Этап 1: Первое обращение"
+                  aria-pressed="true"
+                >
+                  <span></span></button
+                ><button
+                  data-album-tab="1"
+                  aria-label="Этап 2: Подготовка"
+                  aria-pressed="false"
+                >
+                  <span></span></button
+                ><button
+                  data-album-tab="2"
+                  aria-label="Этап 3: Работа с объектом"
+                  aria-pressed="false"
+                >
+                  <span></span></button
+                ><button
+                  data-album-tab="3"
+                  aria-label="Этап 4: Завершение"
+                  aria-pressed="false"
+                >
+                  <span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="album-stage"
+            data-album
+            tabindex="0"
+            role="region"
+            aria-label="Этапы работы"
+          >
+            <article class="album-page album-page-1" data-album-page>
+              <span class="album-page-label">Первое обращение</span
+              ><span class="album-number" aria-hidden="true">01</span>
+              <div class="album-page-copy">
+                <h3>Обсуждаем задачу</h3>
+                <p>
+                  Уточняем город, бюджет, сроки и исходную ситуацию. Определяем,
+                  что нужно решить в первую очередь.
+                </p>
+              </div>
+              <div class="album-drawing drawing-register">
+                <span>Город</span><i></i><span>Задача</span><i></i
+                ><span>Сроки</span><i></i><b>Начинаем с вашего запроса</b>
+              </div>
+              <p class="album-page-foot">Город / Бюджет / Сроки</p>
+            </article>
+            <article class="album-page album-page-2" data-album-page>
+              <span class="album-page-label">Подготовка</span
+              ><span class="album-number" aria-hidden="true">02</span>
+              <div class="album-page-copy">
+                <h3>Согласуем порядок действий</h3>
+                <p>
+                  Для покупки — требования и варианты поиска. Для продажи —
+                  сведения об объекте и подготовка к размещению.
+                </p>
+              </div>
+              <svg
+                class="architectural-plan plan-album"
+                viewBox="0 0 600 520"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  class="plan-outline"
+                  d="M70 70h430v330H70zM70 220h190V70m0 150h240M260 220v180M390 220v180M70 330h190M145 220v110"
+                  stroke="currentColor"
+                  stroke-width="1.2"
+                />
+                <path
+                  d="M70 40h430M40 70v330M530 70v330M70 430h430M66 34v12m438-12v12M34 66h12m-12 338h12M524 66h12m-12 338h12M66 424v12m438-12v12"
+                  stroke="currentColor"
+                  stroke-width=".7"
+                />
+                <path
+                  d="M260 220a60 60 0 0 1 60 60h-60m130 10a45 45 0 0 1 45-45v45"
+                  stroke="currentColor"
+                  stroke-width=".8"
+                />
+                <path
+                  d="M260 168v-35m-95 87h-35m260 110v35"
+                  stroke="var(--accent)"
+                  stroke-width="5"
+                />
+                <path
+                  d="M70 400h90m340-330v90"
+                  stroke="currentColor"
+                  stroke-width="4"
+                />
+                <text
+                  x="70"
+                  y="483"
+                  fill="currentColor"
+                  font-family="Manrope, sans-serif"
+                  font-size="10"
+                  letter-spacing="3"
+                >
+                  ЛИЧНЫЙ МАСШТАБ
+                </text>
+              </svg>
+              <p class="album-page-foot">Запрос / Варианты / План</p>
+            </article>
+            <article class="album-page album-page-3" data-album-page>
+              <span class="album-page-label">Работа с объектом</span
+              ><span class="album-number" aria-hidden="true">03</span>
+              <div class="album-page-copy">
+                <h3>Сравниваем и обсуждаем</h3>
+                <p>
+                  Подбираем предложения или работаем с обращениями покупателей.
+                  Организуем просмотры и обсуждаем условия.
+                </p>
+              </div>
+              <div class="album-drawing drawing-compare">
+                <div><span>01</span><b>Сравнить</b><i></i><i></i></div>
+                <div><span>02</span><b>Обсудить</b><i></i><i></i></div>
+                <span class="drawing-caption">Условия до решения</span>
+              </div>
+              <p class="album-page-foot">Просмотры / Вопросы / Условия</p>
+            </article>
+            <article class="album-page album-page-4" data-album-page>
+              <span class="album-page-label">Завершение</span
+              ><span class="album-number" aria-hidden="true">04</span>
+              <div class="album-page-copy">
+                <h3>Готовимся к сделке</h3>
+                <p>
+                  Координируем участников, согласуем документы и порядок
+                  оформления. Ильсияр сопровождает дальнейшие действия.
+                </p>
+              </div>
+              <div class="album-drawing drawing-document">
+                <span>Порядок оформления</span><i></i><i></i><i></i>
+                <div>Документы<span>Согласование</span></div>
+              </div>
+              <p class="album-page-foot">Участники / Документы / Оформление</p>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section
+        class="consultation-section"
+        id="faq"
+        aria-labelledby="consultation-title"
+      >
+        <div class="shell">
+          <div class="consultation-heading">
+            <p class="section-kicker">05 / До первого разговора</p>
+            <h2 id="consultation-title">
+              Вопросы<br /><span>по существу.</span>
+            </h2>
+            <p>Несколько ответов, которые помогут определить следующий шаг.</p>
+          </div>
+          <div class="consultation-layout" data-consultation>
+            <div
+              class="consultation-index"
+              role="tablist"
+              aria-orientation="vertical"
+              aria-label="Частые вопросы"
+            >
+              <button
+                id="question-0"
+                role="tab"
+                data-question="0"
+                aria-controls="consultation-answer"
+                aria-selected="true"
+              >
+                <span class="question-index">01</span
+                ><span>Можно обратиться с объектом в другом регионе?</span
+                ><svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 18 18 6M6 6h12v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg></button
+              ><button
+                id="question-1"
+                role="tab"
+                data-question="1"
+                aria-controls="consultation-answer"
+                aria-selected="false"
+              >
+                <span class="question-index">02</span
+                ><span>Если я ещё не решил продавать?</span
+                ><svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 18 18 6M6 6h12v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg></button
+              ><button
+                id="question-2"
+                role="tab"
+                data-question="2"
+                aria-controls="consultation-answer"
+                aria-selected="false"
+              >
+                <span class="question-index">03</span
+                ><span>Вы работаете с новостройками и ипотекой?</span
+                ><svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 18 18 6M6 6h12v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg></button
+              ><button
+                id="question-3"
+                role="tab"
+                data-question="3"
+                aria-controls="consultation-answer"
+                aria-selected="false"
+              >
+                <span class="question-index">04</span
+                ><span>Поможете оценить объект перед продажей?</span
+                ><svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 18 18 6M6 6h12v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg></button
+              ><span class="consultation-marker" aria-hidden="true"></span>
+            </div>
+            <div
+              class="consultation-panel"
+              id="consultation-answer"
+              role="tabpanel"
+              aria-labelledby="question-0"
+              tabindex="0"
+            >
+              <article class="consultation-answer" data-answer="0">
+                <span class="answer-label">Консультация / 01</span>
+                <h3>Другой регион</h3>
+                <p>
+                  Да. Работа выстраивается по России. Формат сопровождения
+                  обсудим с учётом региона и задачи.
+                </p>
+                <a class="text-link" href="#contact-form" data-intent="Другое"
+                  >Обсудить мой вопрос
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg></a
+                ><span class="answer-number" aria-hidden="true">01</span>
+              </article>
+              <article class="consultation-answer" data-answer="1">
+                <span class="answer-label">Консультация / 02</span>
+                <h3>Решение о продаже</h3>
+                <p>
+                  Можно начать с обсуждения объекта и рыночной ситуации, не
+                  принимая решение о продаже заранее.
+                </p>
+                <a class="text-link" href="#contact-form" data-intent="Другое"
+                  >Обсудить мой вопрос
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg></a
+                ><span class="answer-number" aria-hidden="true">02</span>
+              </article>
+              <article class="consultation-answer" data-answer="2">
+                <span class="answer-label">Консультация / 03</span>
+                <h3>Новостройки и ипотека</h3>
+                <p>
+                  Помогаю сравнить проекты и условия застройщиков. При
+                  необходимости подключается ипотечный брокер.
+                </p>
+                <a class="text-link" href="#contact-form" data-intent="Другое"
+                  >Обсудить мой вопрос
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg></a
+                ><span class="answer-number" aria-hidden="true">03</span>
+              </article>
+              <article class="consultation-answer" data-answer="3">
+                <span class="answer-label">Консультация / 04</span>
+                <h3>Оценка объекта</h3>
+                <p>
+                  Да. Обсудим характеристики объекта, текущие предложения на
+                  рынке и ориентир для продажи.
+                </p>
+                <a class="text-link" href="#contact-form" data-intent="Другое"
+                  >Обсудить мой вопрос
+                  <svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg></a
+                ><span class="answer-number" aria-hidden="true">04</span>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        class="contact-section"
+        id="contact"
+        aria-labelledby="contact-title"
+      >
+        <div class="shell">
+          <div class="contact-heading">
+            <p class="section-kicker">06 / Личный контакт</p>
+            <h2 id="contact-title">
+              Расскажите,<br /><span>что нужно решить.</span>
+            </h2>
+          </div>
+          <div class="contact-layout">
+            <div class="contact-person">
+              <p class="contact-person-name">Ильсияр<br />Тухватшина</p>
+              <p class="contact-person-role">
+                Эксперт по недвижимости<br />АН «Норма» · Работа по России
+              </p>
+              <p class="contact-invitation">
+                Напишите город, хотите купить или продать и что для вас важно.
+                Обсудим ситуацию и следующий шаг.
+              </p>
+              <a
+                class="contact-max"
+                href="https://max.ru/u/f9LHodD0cOKs7_oYOS3TB9VatfujTB8eyR0NKQKM1gUh8QtX0KpVJBIRui24"
+                data-contact="max"
+                target="_blank"
+                rel="noopener noreferrer"
+                >Написать в MAX<svg
+                  class="icon"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 18 18 6M6 6h12v12"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  /></svg></a
+              ><a
+                class="contact-phone"
+                href="tel:+79374848565"
+                data-contact="phone"
+                >8 937 484-85-65</a
+              >
+              <div class="contact-secondary">
+                <a
+                  class=""
+                  href="https://wa.me/79374848565"
+                  data-contact="whatsapp"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >WhatsApp<svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg></a
+                ><a
+                  class=""
+                  href="https://t.me/IlsiyarT"
+                  data-contact="telegram"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >Telegram<svg
+                    class="icon"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 18 18 6M6 6h12v12"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg
+                ></a>
+              </div>
+              <div class="contact-note">
+                <span></span>Общаетесь лично со мной
+              </div>
+            </div>
+            <div class="contact-form-container" id="contact-form">
+              <form class="lead-form" data-lead-form novalidate>
+                <div class="form-heading">
+                  <h3>Оставить обращение</h3>
+                  <span>Лично Ильсияр</span>
+                </div>
+                <div class="inquiry-context" data-inquiry-context hidden>
+                  <p></p>
+                  <button type="button" data-clear-context>
+                    Убрать контекст
+                  </button>
+                </div>
+                <div class="form-honeypot" aria-hidden="true" inert>
+                  <label
+                    >Оставьте поле пустым<input
+                      type="text"
+                      name="contact_guard"
+                      data-lead-guard
+                      data-lpignore="true"
+                      data-1p-ignore="true"
+                      maxlength="200"
+                      spellcheck="false"
+                      tabindex="-1"
+                      autocomplete="off"
+                  /></label>
+                </div>
+                <div class="form-row">
+                  <label
+                    ><span>Имя *</span
+                    ><input
+                      type="text"
+                      name="name"
+                      autocomplete="name"
+                      required
+                      minlength="2"
+                      maxlength="80"
+                      placeholder="Как к вам обращаться" /></label
+                  ><label
+                    ><span>Телефон *</span
+                    ><input
+                      type="tel"
+                      name="phone"
+                      autocomplete="tel"
+                      inputmode="tel"
+                      required
+                      minlength="10"
+                      maxlength="32"
+                      placeholder="+7 900 000-00-00"
+                  /></label>
+                </div>
+                <label
+                  ><span>Город *</span
+                  ><input
+                    type="text"
+                    name="city"
+                    autocomplete="address-level2"
+                    required
+                    minlength="2"
+                    maxlength="100"
+                    placeholder="Где ищете или продаёте"
+                /></label>
+                <fieldset>
+                  <legend>Что нужно *</legend>
+                  <div class="intent-options">
+                    <label
+                      ><input
+                        type="radio"
+                        name="intent"
+                        value="Купить"
+                        required
+                      /><span>Купить</span></label
+                    ><label
+                      ><input type="radio" name="intent" value="Продать" /><span
+                        >Продать</span
+                      ></label
+                    ><label
+                      ><input type="radio" name="intent" value="Оценить" /><span
+                        >Оценить</span
+                      ></label
+                    ><label
+                      ><input type="radio" name="intent" value="Другое" /><span
+                        >Другое</span
+                      ></label
+                    >
+                  </div>
+                </fieldset>
+                <label
+                  ><span>Комментарий <small>необязательно</small></span
+                  ><textarea
+                    name="comment"
+                    rows="3"
+                    maxlength="1000"
+                    placeholder="Что для вас важно?"
+                  ></textarea>
+                </label>
+                <label class="consent"
+                  ><input type="checkbox" name="consent" required /><span
+                    >Согласен(на) на обработку персональных данных для ответа на
+                    обращение.</span
+                  ></label
+                >
+                <button
+                  class="button button-dark form-submit"
+                  type="submit"
+                  disabled
+                >
+                  Обсудить задачу
+                  <svg
                     class="icon"
                     width="20"
                     height="20"
@@ -850,256 +1622,31 @@
                     <path
                       d="M5 12h14m-6-6 6 6-6 6"
                       stroke="currentColor"
-                      stroke-width="1.4"
+                      stroke-width="1.5"
                       stroke-linecap="round"
                       stroke-linejoin="round"
                     />
                   </svg>
-                </summary>
-                <span id="buy" class="anchor-target" aria-hidden="true"></span
-                ><span
-                  id="sell"
-                  class="anchor-target"
-                  aria-hidden="true"
-                ></span>
-                <form class="lead-form" data-lead-form novalidate>
-                  <div class="form-heading">
-                    <h3>Оставить обращение</h3>
-                    <span>Лично Ильсияр</span>
-                  </div>
-                  <div class="inquiry-context" data-inquiry-context hidden>
-                    <p></p>
-                    <button type="button" data-clear-context>
-                      Убрать контекст
-                    </button>
-                  </div>
-                  <div class="form-honeypot" aria-hidden="true" inert>
-                    <label
-                      >Оставьте поле пустым<input
-                        type="text"
-                        name="contact_guard"
-                        data-lead-guard
-                        data-lpignore="true"
-                        data-1p-ignore="true"
-                        maxlength="200"
-                        spellcheck="false"
-                        tabindex="-1"
-                        autocomplete="off"
-                    /></label>
-                  </div>
-                  <div class="form-row">
-                    <label
-                      ><span>Имя *</span
-                      ><input
-                        type="text"
-                        name="name"
-                        autocomplete="name"
-                        required
-                        minlength="2"
-                        maxlength="80"
-                        placeholder="Как к вам обращаться" /></label
-                    ><label
-                      ><span>Телефон *</span
-                      ><input
-                        type="tel"
-                        name="phone"
-                        autocomplete="tel"
-                        inputmode="tel"
-                        required
-                        minlength="10"
-                        maxlength="32"
-                        placeholder="+7 900 000-00-00"
-                    /></label>
-                  </div>
-                  <label
-                    ><span>Город *</span
-                    ><input
-                      type="text"
-                      name="city"
-                      autocomplete="address-level2"
-                      required
-                      minlength="2"
-                      maxlength="100"
-                      placeholder="Где ищете или продаёте"
-                  /></label>
-                  <fieldset>
-                    <legend>Что нужно *</legend>
-                    <div class="intent-options">
-                      <label
-                        ><input
-                          type="radio"
-                          name="intent"
-                          value="Купить"
-                          required
-                        /><span>Купить</span></label
-                      ><label
-                        ><input
-                          type="radio"
-                          name="intent"
-                          value="Продать"
-                        /><span>Продать</span></label
-                      ><label
-                        ><input
-                          type="radio"
-                          name="intent"
-                          value="Оценить"
-                        /><span>Оценить</span></label
-                      ><label
-                        ><input
-                          type="radio"
-                          name="intent"
-                          value="Другое"
-                        /><span>Другое</span></label
-                      >
-                    </div>
-                  </fieldset>
-                  <label
-                    ><span>Комментарий <small>необязательно</small></span
-                    ><textarea
-                      name="comment"
-                      rows="3"
-                      maxlength="1000"
-                      placeholder="Что для вас важно?"
-                    ></textarea>
-                  </label>
-                  <label class="consent"
-                    ><input type="checkbox" name="consent" required /><span
-                      >Согласен(на) на обработку персональных данных для ответа
-                      на обращение.</span
-                    ></label
-                  >
-                  <button
-                    class="button button-dark form-submit"
-                    type="submit"
-                    disabled
-                  >
-                    Обсудить задачу
-                    <svg
-                      class="icon"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 12h14m-6-6 6 6-6 6"
-                        stroke="currentColor"
-                        stroke-width="1.5"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      />
-                    </svg>
-                  </button>
-                  <p class="form-note">
-                    Данные отправляются Ильсияр и используются только для ответа
-                    на обращение.
-                  </p>
-                  <div
-                    class="form-status"
-                    data-form-status
-                    role="status"
-                    aria-live="polite"
-                    aria-atomic="true"
-                    tabindex="-1"
-                  ></div>
-                  <noscript
-                    ><p>
-                      Для отправки формы нужен JavaScript. Вы можете
-                      <a href="tel:+79374848565">позвонить Ильсияр</a>.
-                    </p></noscript
-                  >
-                </form>
-              </details>
-              <div class="contact-profile-links">
-                <a
-                  href="https://max.ru/join/uustn4TLuKcPvMNIyR5K932BFnBPhkdwYG1FXoGfWsk"
-                  data-contact="maxChannel"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >MAX-канал</a
-                ><a
-                  href="https://www.instagram.com/ilsiyartuxvatshina/"
-                  data-contact="instagram"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  >Instagram</a
+                </button>
+                <p class="form-note">
+                  Данные отправляются Ильсияр и используются только для ответа
+                  на обращение.
+                </p>
+                <div
+                  class="form-status"
+                  data-form-status
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                  tabindex="-1"
+                ></div>
+                <noscript
+                  ><p>
+                    Для отправки формы нужен JavaScript. Вы можете
+                    <a href="tel:+79374848565">позвонить Ильсияр</a>.
+                  </p></noscript
                 >
-              </div>
-              <div class="contact-direct">
-                <a
-                  class="contact-phone"
-                  data-contact="phone"
-                  href="tel:+79374848565"
-                  >8 937 484-85-65</a
-                >
-                <div class="contact-messengers">
-                  <a
-                    data-contact="max"
-                    href="https://max.ru/u/f9LHodD0cOKs7_oYOS3TB9VatfujTB8eyR0NKQKM1gUh8QtX0KpVJBIRui24"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >MAX
-                    <svg
-                      class="icon"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 12h14m-6-6 6 6-6 6"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      /></svg></a
-                  ><a
-                    data-contact="whatsapp"
-                    href="https://wa.me/79374848565"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >WhatsApp
-                    <svg
-                      class="icon"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 12h14m-6-6 6 6-6 6"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      /></svg></a
-                  ><a
-                    data-contact="telegram"
-                    href="https://t.me/IlsiyarT"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    >Telegram
-                    <svg
-                      class="icon"
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M5 12h14m-6-6 6 6-6 6"
-                        stroke="currentColor"
-                        stroke-width="1.4"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      /></svg
-                  ></a>
-                </div>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -1107,22 +1654,32 @@
     </main>
     <footer class="site-footer">
       <div class="shell footer-top">
-        <a class="brand" href="index.html">Норма</a>
+        <a
+          class="wordmark"
+          href="index.html"
+          aria-label="Ильсияр Тухватшина — главная"
+          ><span class="wordmark-initials" aria-hidden="true">ИТ</span
+          ><span class="wordmark-name">Ильсияр<span>Тухватшина</span></span></a
+        >
         <p>
-          Ильсияр Тухватшина<span>Эксперт по недвижимости · АН «Норма»</span>
+          Личный эксперт по недвижимости<span
+            >Работа по России · АН «Норма»</span
+          >
         </p>
-        <a class="footer-phone" href="tel:+79374848565">8 937 484-85-65</a>
+        <a class="footer-phone" href="tel:+79374848565" data-contact="phone"
+          >8 937 484-85-65</a
+        >
       </div>
       <div class="shell footer-bottom">
         <span>© <span data-year>2026</span> Ильсияр Тухватшина</span>
-        <p>
-          Сайт разработан
+        <div class="footer-profiles">
           <a
-            href="https://land-lab.ru"
+            class=""
+            href="https://max.ru/join/uustn4TLuKcPvMNIyR5K932BFnBPhkdwYG1FXoGfWsk"
+            data-contact="maxChannel"
             target="_blank"
             rel="noopener noreferrer"
-            >LandLab
-            <svg
+            >MAX-канал<svg
               class="icon"
               width="20"
               height="20"
@@ -1131,12 +1688,42 @@
               aria-hidden="true"
             >
               <path
-                d="m6 18 12-12M7 6h11v11"
+                d="M6 18 18 6M6 6h12v12"
                 stroke="currentColor"
                 stroke-width="1.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               /></svg></a
+          ><a
+            class=""
+            href="https://www.instagram.com/ilsiyartuxvatshina/"
+            data-contact="instagram"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Instagram<svg
+              class="icon"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M6 18 18 6M6 6h12v12"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg
+          ></a>
+        </div>
+        <p>
+          Сайт разработан
+          <a
+            href="https://land-lab.ru"
+            target="_blank"
+            rel="noopener noreferrer"
+            >LandLab</a
           ><span class="credit-detail">
             — сайты и цифровые продукты для бизнеса</span
           >

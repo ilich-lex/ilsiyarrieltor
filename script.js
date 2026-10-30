@@ -292,224 +292,48 @@ function initHeader() {
   update();
 }
 
-function initHeroIntro() {
-  if (
-    reducedMotion.matches ||
-    performance.now() > 600 ||
-    document.body.dataset.page !== "home"
-  )
-    return;
-  // Start immediately, never wait for the optional library or hide LCP pixels.
-  function entrance(element, keyframes, seconds, delay = 0) {
-    if (!element) return;
-    if (typeof window.Motion?.animate === "function") {
-      const motion = animate(element, keyframes, { duration: seconds, delay });
-      motion?.then(() =>
-        requestAnimationFrame(() => (element.style.transform = "")),
-      );
-    } else if (element.animate) {
-      const motion = element.animate(keyframes, {
-        duration: seconds * 1000,
-        delay: delay * 1000,
-        easing: "cubic-bezier(.22,1,.36,1)",
-        fill: "both",
-      });
-      motion.finished.then(() => motion.cancel()).catch(() => {});
-    }
-  }
-  entrance(
-    $(".hero-background img"),
-    { transform: ["scale(1.035)", "scale(1)"] },
-    1.05,
-  );
-  entrance(
-    $(".hero-person"),
-    { transform: ["translateY(12px)", "translateY(0)"] },
-    0.9,
-  );
-  entrance(
-    $(".hero h1"),
-    { transform: ["translateY(12px)", "translateY(0)"] },
-    0.8,
-  );
-  entrance(
-    $(".hero-description"),
-    { transform: ["translateY(10px)", "translateY(0)"] },
-    0.8,
-  );
-  $$(".hero-actions .button").forEach((button, i) =>
-    entrance(
-      button,
-      { transform: ["translateY(8px)", "translateY(0)"] },
-      0.65,
-      i * 0.06,
-    ),
-  );
-}
-
-function initReveals() {
-  if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
-    return;
-  if (!("IntersectionObserver" in window)) return;
-  const observer = new IntersectionObserver(
-    (entries) =>
-      entries.forEach(({ target, isIntersecting, intersectionRatio }) => {
-        if (!isIntersecting) return;
-        if (
-          target.hasAttribute("data-reference-process") &&
-          intersectionRatio < 0.65
-        )
-          return;
-        if (target.hasAttribute("data-reference-about")) {
-          animate(
-            $(".about-photo", target),
-            { clipPath: ["inset(0 0 7% 0)", "inset(0)"] },
-            { duration: 0.8 },
-          );
-          animate(
-            $(".about-copy", target),
-            { transform: ["translateY(16px)", "translateY(0)"] },
-            { duration: 0.7 },
-          );
-          animate(
-            $(".about-points", target),
-            {
-              opacity: [0.65, 1],
-              transform: ["translateY(12px)", "translateY(0)"],
-            },
-            { duration: 0.7, delay: 0.08 },
-          );
-        } else if (target.hasAttribute("data-reference-process")) {
-          const vertical = innerWidth <= 700;
-          $$(".process-line", target).forEach((line, i) =>
-            animate(
-              line,
-              {
-                transform: [
-                  vertical ? "scaleY(0)" : "scaleX(0)",
-                  vertical ? "scaleY(1)" : "scaleX(1)",
-                ],
-              },
-              { duration: 0.65, delay: i * 0.14 },
-            ),
-          );
-          $$(".process-number", target).forEach((number, i) =>
-            animate(
-              number,
-              { opacity: [0.45, 1] },
-              { duration: 0.4, delay: i * 0.12 },
-            ),
-          );
-          $$(".process-step h3", target).forEach((label, i) =>
-            animate(
-              label,
-              { opacity: [0.65, 1] },
-              { duration: 0.45, delay: i * 0.08 },
-            ),
-          );
-        } else
-          animate(
-            target,
-            {
-              opacity: [0.65, 1],
-              transform: ["translateY(16px)", "translateY(0)"],
-            },
-            { duration: 0.6 },
-          );
-        observer.unobserve(target);
-      }),
-    { threshold: [0.18, 0.65] },
-  );
-  $$("[data-reference-about],[data-reference-process],[data-reveal]").forEach(
-    (el) => observer.observe(el),
-  );
-  const band = $(".contact-band"),
-    image = $(".band-background img");
-  if (
-    band &&
-    image &&
-    matchMedia("(min-width: 1001px) and (pointer: fine)").matches
-  ) {
-    let visible = false,
-      frame;
-    const update = () => {
-      frame = null;
-      if (!visible || reducedMotion.matches) return;
-      const r = band.getBoundingClientRect();
-      image.style.transform =
-        "translateY(" +
-        Math.max(-12, Math.min(12, (r.top - innerHeight * 0.5) * 0.025)) +
-        "px) scale(1.035)";
-    };
-    new IntersectionObserver((entries) => {
-      visible = entries[0].isIntersecting;
-      if (visible) update();
-    }).observe(band);
-    addEventListener(
-      "scroll",
-      () => {
-        if (visible && !frame) frame = requestAnimationFrame(update);
-      },
-      { passive: true },
-    );
-    reducedMotion.addEventListener("change", () => {
-      if (reducedMotion.matches) image.style.transform = "";
-    });
-  }
-}
-
-function openInquiry(hash, scrolling = true) {
-  const target = $("#contact-form");
-  if (!target) return;
-  if (hash === "#buy" || hash === "#sell") {
-    const value = hash === "#sell" ? "Продать" : "Купить";
-    const option = $$("input[name=intent]").find((el) => el.value === value);
-    if (option) option.checked = true;
-  }
-  target.open = true;
-  if (scrolling) scrollToTarget(target);
-}
+let selectSignatureService = null;
 function scrollToTarget(target) {
+  if (!target) return;
   const offset = Math.max(
-    90,
-    ($(".header-row")?.getBoundingClientRect().height || 64) + 20,
+    96,
+    ($(".header-row")?.getBoundingClientRect().height || 74) + 22,
   );
   scrollTo({
     top: Math.max(0, target.getBoundingClientRect().top + scrollY - offset),
     behavior: reducedMotion.matches ? "instant" : "smooth",
   });
 }
-function initReferenceInteractions() {
+function openCategoryInquiry(category) {
+  if (!Object.hasOwn(CATEGORIES, category)) return;
+  inquiryCategory = category;
+  inquiryProperty = null;
+  inquiryPropertyId = null;
+  const option = $('input[name=intent][value="Купить"]');
+  if (option) option.checked = true;
+  updateInquiryContext();
+  const url = new URL(location.href);
+  url.searchParams.set("category", category);
+  url.searchParams.set("intent", "Купить");
+  url.searchParams.delete("property");
+  url.hash = "contact-form";
+  history.pushState(null, "", url);
+  $(".more-directions")?.removeAttribute("open");
+  scrollToTarget($("#contact-form"));
+}
+function initCategoryInquiries() {
   document.addEventListener("click", (event) => {
-    const link = event.target.closest("[data-inquiry-category]");
-    if (!link || event.metaKey || event.ctrlKey || event.shiftKey) return;
-    const category = link.dataset.inquiryCategory;
-    if (!Object.hasOwn(CATEGORIES, category)) return;
+    const a = event.target.closest("[data-inquiry-category]");
+    if (
+      !a ||
+      event.defaultPrevented ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey
+    )
+      return;
     event.preventDefault();
-    inquiryCategory = category;
-    const option = $$("input[name=intent]").find((el) => el.value === "Купить");
-    if (option) option.checked = true;
-    updateInquiryContext();
-    const url = new URL(location.href);
-    url.searchParams.set("category", category);
-    url.searchParams.set("intent", "Купить");
-    url.hash = "contact-form";
-    history.pushState(null, "", url);
-    $(".more-directions")?.removeAttribute("open");
-    openInquiry("#contact-form");
-  });
-  $("[data-expand-faq]")?.addEventListener("click", (event) => {
-    const button = event.currentTarget,
-      opened = button.getAttribute("aria-pressed") !== "true";
-    button.setAttribute("aria-pressed", String(opened));
-    button.firstChild.textContent = opened ? "Свернуть ответы" : "Все ответы";
-    $$(".faq-list details").forEach((details) => {
-      const summary = $("summary", details);
-      const current = summary.hasAttribute("aria-expanded")
-        ? summary.getAttribute("aria-expanded") === "true"
-        : details.open;
-      if (current !== opened) summary.click();
-    });
+    openCategoryInquiry(a.dataset.inquiryCategory);
   });
 }
 function initAnchors() {
@@ -521,12 +345,15 @@ function initAnchors() {
       return;
     }
     if (!id) return;
-    if (["buy", "sell", "contact-form"].includes(id)) {
-      openInquiry(hash);
+    if (["buy", "sell"].includes(id)) {
+      selectSignatureService?.(id, false);
+      scrollToTarget($("#services"));
       return;
     }
     const target = document.getElementById(id);
-    if (target) scrollToTarget(target);
+    if (!target) return;
+    if (target instanceof HTMLDetailsElement) target.open = true;
+    scrollToTarget(target);
   }
   document.addEventListener("click", (event) => {
     const a = event.target.closest('a[href^="#"]');
@@ -544,55 +371,720 @@ function initAnchors() {
     history.pushState(null, "", hash);
     go(hash);
   });
-  function restore() {
-    const value = new URLSearchParams(location.search).get("category");
-    inquiryCategory = Object.hasOwn(CATEGORIES, value || "") ? value : null;
+  addEventListener("popstate", () => {
+    const v = new URLSearchParams(location.search).get("category");
+    inquiryCategory = Object.hasOwn(CATEGORIES, v || "") ? v : null;
     updateInquiryContext();
     go(location.hash);
-  }
-  addEventListener("popstate", restore);
+  });
   addEventListener("hashchange", () => go(location.hash));
-  if (location.hash) {
-    if (["#buy", "#sell", "#contact-form"].includes(location.hash))
-      openInquiry(location.hash, false);
+  if (location.hash)
     document.fonts.ready.then(() =>
       requestAnimationFrame(() => go(location.hash)),
     );
-  }
 }
 
-function initFAQ() {
-  $$(".faq-list details").forEach((details) => {
-    const summary = $("summary", details);
-    let animation,
-      revision = 0,
-      opened = details.open;
-    summary.addEventListener("click", (e) => {
-      e.preventDefault();
-      opened = !opened;
-      const ticket = ++revision;
-      animation?.stop();
-      const from = details.getBoundingClientRect().height;
-      details.style.height = "";
-      details.open = true;
-      const to = opened
-        ? details.getBoundingClientRect().height
-        : summary.getBoundingClientRect().height + 2;
-      summary.setAttribute("aria-expanded", String(opened));
-      const finish = () => {
-        if (ticket !== revision) return;
-        details.open = opened;
-        details.style.height = "";
-      };
-      animation = animate(
-        details,
-        { height: [from + "px", to + "px"] },
-        { duration: 0.32 },
-      );
-      if (animation) animation.then(finish);
-      else finish();
+function numberTween(from, to, update, duration = 0.8) {
+  if (reducedMotion.matches) {
+    update(to);
+    return null;
+  }
+  if (typeof window.Motion?.animate === "function")
+    return Motion.animate(from, to, {
+      duration,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: update,
+    });
+  let frame,
+    stopped = false,
+    start = performance.now();
+  function step(now) {
+    if (stopped) return;
+    const t = Math.min(1, (now - start) / (duration * 1000));
+    update(from + (to - from) * (1 - Math.pow(1 - t, 4)));
+    if (t < 1) frame = requestAnimationFrame(step);
+  }
+  frame = requestAnimationFrame(step);
+  return {
+    stop() {
+      stopped = true;
+      cancelAnimationFrame(frame);
+    },
+  };
+}
+function initArcCarousel() {
+  const root = $("[data-arc-carousel]");
+  if (!root) return;
+  const stage = $("[data-arc-stage]", root),
+    cards = $$("[data-arc-card]", root),
+    count = cards.length,
+    controls = $("[data-arc-controls]", root);
+  let phase = 0,
+    selected = 0,
+    tween,
+    drag = null,
+    frame,
+    skipClickUntil = 0,
+    rx = 400,
+    ry = 105;
+  const mod = (n) => ((n % count) + count) % count;
+  root.classList.add("is-enhanced");
+  controls.hidden = false;
+  function render(value) {
+    phase = value;
+    cards.forEach((card, i) => {
+      const angle = ((i - phase) * Math.PI * 2) / count,
+        c = Math.cos(angle),
+        sn = Math.sin(angle),
+        x = rx * sn,
+        y = ry * (1 - c) - 32;
+      const scale = 0.72 + (0.28 * (c + 1)) / 2,
+        opacity = c >= 0 ? 0.72 + 0.28 * c : Math.max(0, 0.72 * (1 + c * 2));
+      card.style.transform =
+        "translate3d(calc(-50% + " +
+        x.toFixed(3) +
+        "px),calc(-50% + " +
+        y.toFixed(3) +
+        "px),0) rotate(" +
+        (sn * 9).toFixed(3) +
+        "deg) scale(" +
+        scale.toFixed(4) +
+        ")";
+      card.style.zIndex = String(Math.round((c + 1) * 100));
+      card.style.opacity = String(opacity);
+      card.style.pointerEvents = opacity < 0.15 ? "none" : "auto";
+      card.dataset.arcAngle = angle.toFixed(5);
+      card.dataset.arcX = x.toFixed(3);
+      card.dataset.arcY = y.toFixed(3);
+    });
+  }
+  function announce(index) {
+    selected = index;
+    cards.forEach((card, i) => {
+      card.classList.toggle("is-active", i === index);
+      card.tabIndex = i === index ? 0 : -1;
+      card.setAttribute("aria-current", String(i === index));
+    });
+    const card = cards[index],
+      title = $("h3", card).textContent,
+      label = $("p", card).textContent;
+    $("[data-arc-current]", root).textContent = String(index + 1).padStart(
+      2,
+      "0",
+    );
+    $("[data-arc-title]", root).textContent = title;
+    $("[data-arc-label]", root).textContent = label;
+    const inquiry = $("[data-arc-inquiry]", root);
+    inquiry.dataset.inquiryCategory = card.dataset.categoryKey;
+    inquiry.href =
+      "index.html?intent=" +
+      encodeURIComponent("Купить") +
+      "&category=" +
+      card.dataset.categoryKey +
+      "#contact-form";
+    $("[data-arc-announcement]", root).textContent =
+      title + ", " + (index + 1) + " из " + count;
+  }
+  function move(target, moving = true) {
+    tween?.stop();
+    announce(mod(Math.round(target)));
+    if (!moving || reducedMotion.matches) {
+      render(target);
+      return;
+    }
+    tween = numberTween(phase, target, render, 0.85);
+  }
+  function select(index) {
+    const round = Math.round(phase),
+      delta = mod(index - mod(round) + count / 2) - count / 2;
+    move(round + delta);
+  }
+  function resize() {
+    rx =
+      stage.clientWidth <= 700
+        ? Math.min(stage.clientWidth * 0.66, 285)
+        : Math.min(stage.clientWidth * 0.34, 445);
+    ry = stage.clientWidth <= 700 ? 90 : 100;
+    render(phase);
+  }
+  $("[data-arc-prev]", root).addEventListener("click", () =>
+    move(Math.round(phase) - 1),
+  );
+  $("[data-arc-next]", root).addEventListener("click", () =>
+    move(Math.round(phase) + 1),
+  );
+  stage.addEventListener("click", (event) => {
+    const card = event.target.closest("[data-arc-card]");
+    if (!card || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    event.preventDefault();
+    if (performance.now() < skipClickUntil) return;
+    const i = cards.indexOf(card);
+    if (i === selected) openCategoryInquiry(card.dataset.categoryKey);
+    else select(i);
+  });
+  root.addEventListener("keydown", (event) => {
+    const map = {
+      ArrowLeft: Math.round(phase) - 1,
+      ArrowRight: Math.round(phase) + 1,
+      Home: Math.round(phase) - mod(Math.round(phase)),
+      End: Math.round(phase) - mod(Math.round(phase)) + count - 1,
+    };
+    if (Object.hasOwn(map, event.key)) {
+      event.preventDefault();
+      move(map[event.key]);
+    }
+  });
+  stage.addEventListener("pointerdown", (event) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    drag = {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      start: phase,
+      active: false,
+      dx: 0,
+    };
+  });
+  stage.addEventListener("pointermove", (event) => {
+    if (!drag || event.pointerId !== drag.id) return;
+    const dx = event.clientX - drag.x,
+      dy = event.clientY - drag.y;
+    if (!drag.active) {
+      if (Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx)) {
+        drag = null;
+        return;
+      }
+      if (Math.abs(dx) < 7 || Math.abs(dx) < Math.abs(dy)) return;
+      tween?.stop();
+      drag.start = phase;
+      drag.active = true;
+      stage.setPointerCapture(event.pointerId);
+      root.classList.add("is-dragging");
+    }
+    drag.dx = dx;
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = null;
+      if (drag?.active)
+        render(drag.start - drag.dx / (cards[0].offsetWidth * 0.85));
     });
   });
+  function release(event) {
+    if (!drag || event.pointerId !== drag.id) return;
+    const active = drag.active,
+      was = drag;
+    drag = null;
+    root.classList.remove("is-dragging");
+    if (stage.hasPointerCapture(event.pointerId))
+      stage.releasePointerCapture(event.pointerId);
+    if (active) {
+      skipClickUntil = performance.now() + 350;
+      let target = Math.round(phase);
+      if (Math.abs(was.dx) > 45 && target === Math.round(was.start))
+        target += was.dx < 0 ? 1 : -1;
+      move(target);
+    }
+  }
+  stage.addEventListener("pointerup", release);
+  stage.addEventListener("pointercancel", release);
+  stage.addEventListener("dragstart", (event) => event.preventDefault());
+  addEventListener("resize", resize);
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) move(Math.round(phase), false);
+  });
+  resize();
+  announce(0);
+}
+
+function stablePanelHeight(container, panels, kind) {
+  let width = 0;
+  function measure(force = false) {
+    if (!force && width === container.clientWidth) return;
+    width = container.clientWidth;
+    const min =
+      kind === "album"
+        ? innerWidth <= 700
+          ? 510
+          : innerWidth <= 1000
+            ? 480
+            : 550
+        : kind === "faq"
+          ? innerWidth <= 700
+            ? 330
+            : innerWidth <= 1000
+              ? 420
+              : 390
+          : innerWidth <= 700
+            ? 0
+            : innerWidth <= 1000
+              ? 610
+              : 570;
+    let height = min;
+    panels.forEach((panel) => {
+      const saved = panel.getAttribute("style");
+      Object.assign(panel.style, {
+        position: "relative",
+        inset: "auto",
+        height: "auto",
+        width: "100%",
+        minHeight: min + "px",
+      });
+      height = Math.max(height, panel.offsetHeight);
+      if (saved === null) panel.removeAttribute("style");
+      else panel.setAttribute("style", saved);
+    });
+    container.style.height = Math.ceil(height) + "px";
+  }
+  measure(true);
+  document.fonts.ready.then(() => measure(true));
+  if ("ResizeObserver" in window)
+    new ResizeObserver(() => measure()).observe(container);
+  else addEventListener("resize", () => measure());
+}
+function clearSceneStyles(panel) {
+  panel.style.transform = "";
+  panel.style.opacity = "";
+  panel.style.zIndex = "";
+}
+function initServiceScenes() {
+  const root = $("[data-services]");
+  if (!root) return;
+  const panels = $$("[data-service-panel]", root),
+    tabs = $$("[data-service-tab]"),
+    tablist = $("[data-service-tabs]"),
+    marker = $(".service-switch-marker");
+  let current = -1,
+    animations = [],
+    revision = 0,
+    pill;
+  root.classList.add("is-enhanced");
+  tablist.hidden = false;
+  stablePanelHeight(root, panels, "service");
+  function position() {
+    const tab = tabs[current];
+    if (!tab) return;
+    pill?.stop();
+    const props = {
+      left: tab.offsetLeft + "px",
+      width: tab.offsetWidth + "px",
+    };
+    pill = animate(marker, props, { duration: 0.36 });
+    if (!pill) Object.assign(marker.style, props);
+  }
+  selectSignatureService = (value, moving = true, syncIntent = true) => {
+    const next = value === "sell" ? 1 : 0;
+    if (current === next && moving) return;
+    const ticket = ++revision;
+    animations.forEach((a) => a?.stop());
+    animations = [];
+    const old = panels[current],
+      incoming = panels[next],
+      direction = next > current ? 1 : -1;
+    current = next;
+    panels.forEach((p, i) => {
+      p.classList.toggle("is-active", i === next);
+      p.classList.remove("is-leaving");
+      p.inert = i !== next;
+      p.setAttribute("aria-hidden", String(i !== next));
+      if (p !== old) clearSceneStyles(p);
+    });
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-selected", String(i === next));
+      tab.tabIndex = i === next ? 0 : -1;
+    });
+    position();
+    const option = $(
+      'input[name=intent][value="' + (next ? "Продать" : "Купить") + '"]',
+    );
+    if (option && syncIntent) option.checked = true;
+    if (!moving || !old || reducedMotion.matches) {
+      panels.forEach(clearSceneStyles);
+      return;
+    }
+    old.classList.add("is-leaving");
+    old.style.zIndex = "2";
+    incoming.style.zIndex = "1";
+    const leave = animate(
+      old,
+      {
+        opacity: 0,
+        transform: "translateX(" + -direction * 35 + "px) scale(.985)",
+      },
+      { duration: 0.4 },
+    );
+    const enter = animate(
+      incoming,
+      {
+        opacity: [0.4, 1],
+        transform: ["translateX(" + direction * 55 + "px)", "translateX(0)"],
+      },
+      { duration: 0.6 },
+    );
+    animations.push(
+      leave,
+      enter,
+      animate(
+        $(".service-art", incoming),
+        {
+          transform: [
+            "translateY(25px) rotate(4deg)",
+            "translateY(0) rotate(0)",
+          ],
+        },
+        { duration: 0.75 },
+      ),
+    );
+    const finish = () => {
+      if (ticket !== revision) return;
+      old.classList.remove("is-leaving");
+      clearSceneStyles(old);
+      clearSceneStyles(incoming);
+    };
+    if (enter) enter.then(finish);
+    else finish();
+  };
+  tabs.forEach((tab) =>
+    tab.addEventListener("click", () => {
+      selectSignatureService(tab.dataset.serviceTab);
+      history.replaceState(null, "", "#" + tab.dataset.serviceTab);
+    }),
+  );
+  tablist.addEventListener("keydown", (event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const value = ["ArrowRight", "End"].includes(event.key) ? "sell" : "buy";
+    selectSignatureService(value);
+    tabs[value === "sell" ? 1 : 0].focus();
+    history.replaceState(null, "", "#" + value);
+  });
+  const selling =
+    location.hash === "#sell" ||
+    new URLSearchParams(location.search).get("intent") === "Продать";
+  selectSignatureService(selling ? "sell" : "buy", false, false);
+  addEventListener("resize", position);
+  document.fonts.ready.then(position);
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches)
+      selectSignatureService(current ? "sell" : "buy", false, false);
+  });
+}
+function initWorkflowAlbum() {
+  const stage = $("[data-album]");
+  if (!stage) return;
+  const pages = $$("[data-album-page]", stage),
+    tabs = $$("[data-album-tab]"),
+    prev = $("[data-album-prev]"),
+    next = $("[data-album-next]"),
+    counter = $("[data-album-current]");
+  let current = -1,
+    animations = [],
+    revision = 0,
+    touch;
+  stage.classList.add("is-enhanced");
+  $("[data-album-controls]").hidden = false;
+  stablePanelHeight(stage, pages, "album");
+  function show(index, moving = true) {
+    index = Math.max(0, Math.min(pages.length - 1, index));
+    if (index === current && moving) return;
+    const ticket = ++revision;
+    animations.forEach((a) => a?.stop());
+    animations = [];
+    const old = pages[current],
+      incoming = pages[index],
+      direction = index > current ? 1 : -1;
+    current = index;
+    pages.forEach((p, i) => {
+      p.classList.toggle("is-active", i === index);
+      p.classList.remove("is-leaving");
+      p.inert = i !== index;
+      p.setAttribute("aria-hidden", String(i !== index));
+      if (p !== old) clearSceneStyles(p);
+    });
+    tabs.forEach((tab, i) => {
+      tab.setAttribute("aria-pressed", String(i === index));
+      if (i === index) tab.setAttribute("aria-current", "step");
+      else tab.removeAttribute("aria-current");
+    });
+    prev.disabled = index === 0;
+    next.disabled = index === pages.length - 1;
+    counter.textContent = String(index + 1).padStart(2, "0");
+    if (!moving || !old || reducedMotion.matches) {
+      pages.forEach(clearSceneStyles);
+      return;
+    }
+    old.classList.add("is-leaving");
+    old.style.zIndex = "3";
+    incoming.style.zIndex = "2";
+    animations.push(
+      animate(
+        old,
+        {
+          transform: "translateY(" + -direction * 85 + "px) scale(.96)",
+          opacity: 0,
+        },
+        { duration: 0.46 },
+      ),
+    );
+    const enter = animate(
+      incoming,
+      {
+        transform: [
+          "translateY(" + direction * 115 + "px) scale(1.025)",
+          "translateY(0) scale(1)",
+        ],
+        opacity: [0.35, 1],
+      },
+      { duration: 0.62 },
+    );
+    animations.push(
+      enter,
+      animate(
+        $(".album-page-copy", incoming),
+        {
+          transform: ["translateY(" + direction * 18 + "px)", "translateY(0)"],
+        },
+        { duration: 0.65 },
+      ),
+      animate(
+        $(".album-drawing,.architectural-plan", incoming),
+        {
+          transform: ["translateY(" + direction * 35 + "px)", "translateY(0)"],
+        },
+        { duration: 0.78 },
+      ),
+    );
+    const finish = () => {
+      if (ticket !== revision) return;
+      old.classList.remove("is-leaving");
+      clearSceneStyles(old);
+      clearSceneStyles(incoming);
+    };
+    if (enter) enter.then(finish);
+    else finish();
+  }
+  prev.addEventListener("click", () => show(current - 1));
+  next.addEventListener("click", () => show(current + 1));
+  tabs.forEach((tab, i) => tab.addEventListener("click", () => show(i)));
+  stage.addEventListener("keydown", (event) => {
+    const map = {
+      ArrowDown: current + 1,
+      ArrowRight: current + 1,
+      ArrowUp: current - 1,
+      ArrowLeft: current - 1,
+      Home: 0,
+      End: 3,
+    };
+    if (Object.hasOwn(map, event.key)) {
+      event.preventDefault();
+      show(map[event.key]);
+    }
+  });
+  stage.addEventListener("pointerdown", (event) => {
+    if (event.isPrimary)
+      touch = { id: event.pointerId, x: event.clientX, y: event.clientY };
+  });
+  stage.addEventListener("pointerup", (event) => {
+    if (!touch || touch.id !== event.pointerId) return;
+    const dx = event.clientX - touch.x,
+      dy = event.clientY - touch.y;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.3)
+      show(current + (dx < 0 ? 1 : -1));
+    touch = null;
+  });
+  stage.addEventListener("pointercancel", () => (touch = null));
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) show(current, false);
+  });
+  show(0, false);
+}
+function initConsultationIndex() {
+  const root = $("[data-consultation]");
+  if (!root) return;
+  root.classList.add("is-enhanced");
+  const buttons = $$("[data-question]", root),
+    panel = $(".consultation-panel", root),
+    answers = $$("[data-answer]", root),
+    marker = $(".consultation-marker", root);
+  let current = -1,
+    animations = [],
+    revision = 0,
+    pill;
+  panel.classList.add("is-enhanced");
+  stablePanelHeight(panel, answers, "faq");
+  function position() {
+    const button = buttons[current];
+    if (!button) return;
+    pill?.stop();
+    const props = {
+      transform: "translateY(" + button.offsetTop + "px)",
+      height: button.offsetHeight + "px",
+    };
+    pill = animate(marker, props, { duration: 0.4 });
+    if (!pill) Object.assign(marker.style, props);
+  }
+  function show(index, moving = true) {
+    if (index === current && moving) return;
+    const ticket = ++revision;
+    animations.forEach((a) => a?.stop());
+    animations = [];
+    const old = answers[current],
+      incoming = answers[index],
+      direction = index > current ? 1 : -1;
+    current = index;
+    buttons.forEach((b, i) => {
+      b.setAttribute("aria-selected", String(i === index));
+      b.tabIndex = i === index ? 0 : -1;
+    });
+    panel.setAttribute("aria-labelledby", buttons[index].id);
+    position();
+    answers.forEach((a, i) => {
+      a.classList.toggle("is-active", i === index);
+      a.classList.remove("is-leaving");
+      a.inert = i !== index;
+      a.setAttribute("aria-hidden", String(i !== index));
+      if (a !== old) clearSceneStyles(a);
+    });
+    if (!moving || !old || reducedMotion.matches) {
+      answers.forEach(clearSceneStyles);
+      return;
+    }
+    old.classList.add("is-leaving");
+    const leave = animate(
+      old,
+      { opacity: 0, transform: "translateY(" + -direction * 20 + "px)" },
+      { duration: 0.26 },
+    );
+    const enter = animate(
+      incoming,
+      {
+        opacity: [0.2, 1],
+        transform: ["translateY(" + direction * 25 + "px)", "translateY(0)"],
+      },
+      { duration: 0.5 },
+    );
+    animations.push(
+      leave,
+      enter,
+      animate(
+        $("h3", incoming),
+        {
+          transform: ["translateX(" + direction * 12 + "px)", "translateX(0)"],
+        },
+        { duration: 0.55 },
+      ),
+    );
+    const finish = () => {
+      if (ticket !== revision) return;
+      old.classList.remove("is-leaving");
+      clearSceneStyles(old);
+      clearSceneStyles(incoming);
+    };
+    if (enter) enter.then(finish);
+    else finish();
+  }
+  buttons.forEach((b, i) => b.addEventListener("click", () => show(i)));
+  $(".consultation-index", root).addEventListener("keydown", (event) => {
+    const i = buttons.indexOf(document.activeElement);
+    if (i < 0) return;
+    const map = {
+      ArrowDown: Math.min(3, i + 1),
+      ArrowUp: Math.max(0, i - 1),
+      Home: 0,
+      End: 3,
+    };
+    if (Object.hasOwn(map, event.key)) {
+      event.preventDefault();
+      show(map[event.key]);
+      buttons[map[event.key]].focus();
+    }
+  });
+  addEventListener("resize", position);
+  document.fonts.ready.then(position);
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) show(current, false);
+  });
+  show(0, false);
+}
+
+// Adapted from Magic UI Text Animate (MIT): word segmentation, slideUp and
+// duration/segment stagger. Vanilla Motion replaces React variants; text keeps one accessible name.
+// Source and license: assets/vendor/MAGIC-UI-LICENSE.md, THIRD-PARTY.md.
+function animateEditorialText(element, { duration = 0.7, delay = 0 } = {}) {
+  if (!element || reducedMotion.matches) return;
+  const words = (element.getAttribute("aria-label") || element.textContent)
+    .split(/(\s+)/)
+    .filter((word) => word.trim());
+  const slots = $$("[aria-hidden=true]", element);
+  const segments = words
+    .map((word, i) => {
+      const slot = slots[i];
+      if (slot) slot.textContent = word;
+      return slot;
+    })
+    .filter(Boolean);
+  segments.forEach((segment, i) =>
+    animate(
+      segment,
+      { opacity: [0.55, 1], transform: ["translateY(20px)", "translateY(0)"] },
+      {
+        duration,
+        delay: delay + i * (duration / Math.max(1, segments.length)) * 0.32,
+      },
+    ),
+  );
+}
+function initSignatureMotion(playIntro = false) {
+  if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
+    return;
+  if (playIntro && scrollY < 100 && performance.now() < 2200) {
+    animate(
+      $(".hero-line"),
+      { transform: ["scaleX(.1)", "scaleX(1)"] },
+      { duration: 0.85 },
+    );
+    animate(
+      $(".signature-portrait"),
+      {
+        clipPath: ["inset(0 0 7% 0)", "inset(0)"],
+        transform: ["translateY(18px)", "translateY(0)"],
+      },
+      { duration: 0.95, delay: 0.08 },
+    );
+    animateEditorialText($("[data-signature-text]"), {
+      duration: 0.8,
+      delay: 0.12,
+    });
+    $$(".hero-edition,.hero-introduction,.signature-actions").forEach((el, i) =>
+      animate(
+        el,
+        {
+          opacity: [0.65, 1],
+          transform: ["translateY(12px)", "translateY(0)"],
+        },
+        { duration: 0.65, delay: 0.2 + i * 0.07 },
+      ),
+    );
+  }
+  if (!("IntersectionObserver" in window)) return;
+  const observer = new IntersectionObserver(
+    (entries) =>
+      entries.forEach(({ target, isIntersecting }) => {
+        if (!isIntersecting) return;
+        animate(
+          $(".personal-portrait", target),
+          { clipPath: ["inset(0 0 10% 0)", "inset(0)"] },
+          { duration: 0.85 },
+        );
+        animate(
+          $(".personal-copy h2", target),
+          { transform: ["translateX(-20px)", "translateX(0)"] },
+          { duration: 0.8, delay: 0.08 },
+        );
+        observer.unobserve(target);
+      }),
+    { threshold: 0.25 },
+  );
+  $$("[data-personal-reveal]").forEach((el) => observer.observe(el));
 }
 
 function propertyCard(p) {
@@ -885,7 +1377,10 @@ function initCatalog(properties) {
     clearTimeout(scheduled);
     scheduled = setTimeout(() => render("replace"), 200);
   });
-  filters.addEventListener("change", () => {
+  filters.addEventListener("change", (event) => {
+    // Text/price input is already debounced. Replacing a card on field blur
+    // would remove the pointer target before its click can navigate.
+    if (event.target.tagName !== "SELECT") return;
     clearTimeout(scheduled);
     render("push");
   });
@@ -1534,18 +2029,21 @@ function initLeadForm() {
 }
 document.addEventListener("DOMContentLoaded", () => {
   applyConfig();
-  initHeader();
-  initReferenceInteractions();
-  initAnchors();
   initIntentLinks();
   initLeadForm();
-  initFAQ();
-  initHeroIntro();
-  // Optional animation loading must never delay form initialization.
-  if (typeof window.Motion?.animate === "function") initReveals();
+  initHeader();
+  initCategoryInquiries();
+  initArcCarousel();
+  initServiceScenes();
+  initWorkflowAlbum();
+  initConsultationIndex();
+  initAnchors();
+  if (typeof window.Motion?.animate === "function") initSignatureMotion(true);
   else
-    $("#motion-library")?.addEventListener("load", () => initReveals(), {
-      once: true,
-    });
+    $("#motion-library")?.addEventListener(
+      "load",
+      () => initSignatureMotion(true),
+      { once: true },
+    );
   loadPublicContent();
 });
