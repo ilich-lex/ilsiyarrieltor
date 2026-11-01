@@ -1,11 +1,28 @@
-# Signature motion adaptation
+# Adapted interaction mechanisms — 01.11.2026
 
-Magic UI **Text Animate** is adapted in `animateEditorialText()` in `script.js`, used by the two-word accessible hero name (`data-magic-text="word-slide-up"`).
+## Motion 14.7.1
 
-Transferred mechanisms: split by whitespace into word segments; duration/segment stagger; slide-up item variant (y=20 to 0); one accessible name on the parent, visual segments aria-hidden. React/AnimatePresence are replaced with the existing vanilla Motion.animate. Initial opacity is kept above zero and the portrait is never hidden while waiting for a library.
+Existing local runtime, unchanged. Actual Motion.animate calls drive hero choreography, navigation highlight, numeric carousel phase, service/step transitions and FAQ height. No framework or second runtime added.
 
-Source: https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/text-animate.tsx
+## Magic UI — Shine Border (MIT)
 
-Retrieved 2026-10-31, source SHA-256: `0ebece79c412661f57bc0489416b55a376e9f006e0f558162bb6e91f814a99a6`. MIT copyright notice is retained in [MAGIC-UI-LICENSE.md](MAGIC-UI-LICENSE.md). No Magic UI Pro material or React dependency is included.
+Source: https://github.com/magicuidesign/magicui/blob/main/apps/www/registry/magicui/shine-border.tsx
 
-Motion 14.7.1 remains the existing local animation runtime. The property carousel is custom: Motion interpolates one phase, and each frame derives x/y/rotation/depth from sin/cos of the category angle. Pointer Events implement horizontal drag; no Embla dependency or paid path API is used.
+The layered radial-gradient background, transparent centre via paired masks and animated background-position are adapted in .contact-form-container[data-shine-border]::after. React props become CSS variables/rules. Animation runs on hover/focus, not forever, and respects reduced motion. Copyright notice retained in MAGIC-UI-LICENSE.md. The former Text Animate adaptation has been removed.
+
+## Motion Primitives — Accordion (MIT)
+
+Source: https://github.com/ibelick/motion-primitives/blob/main/components/core/accordion.tsx
+
+Expanded/collapsed height and opacity variants are adapted in initConsultationIndex(). Native details/summary retain keyboard and no-JS behavior; vanilla Motion replaces AnimatePresence and React state. Interrupted transitions use a revision guard. Copyright notice retained in MOTION-PRIMITIVES-LICENSE.md.
+
+## Aceternity UI — Tabs interaction study
+
+Source: https://ui.aceternity.com/components/tabs
+Registry inspected: https://ui.aceternity.com/registry/tabs.json
+
+The selected-background movement and active-panel depth informed the original vanilla implementation in initServiceScenes(): an independently written moving marker and restrained translate/scale/rotateX transition. No React source, package, paid asset or dependency is copied into this project.
+
+## Custom work
+
+Category carousel: one numeric phase produces sin/cos position, rotation, depth and scale. Pointer drag, horizontal trackpad input, autoplay scheduling and reduced-motion fallback are native JavaScript. Hero, surfaces, layouts and photography framing are project-specific CSS.

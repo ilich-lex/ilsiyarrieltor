@@ -155,6 +155,7 @@ function initHeader() {
     activeLink = null,
     frame;
   const links = $$("[data-nav]", nav);
+  nav.classList.add("is-tracked");
   function setMenu(open, restore = false) {
     const revision = ++menuRevision;
     menuAnimation?.stop();
@@ -226,6 +227,9 @@ function initHeader() {
   });
   function movePill(link) {
     pillAnimation?.stop();
+    links.forEach((item) =>
+      item.toggleAttribute("data-highlight", item === link),
+    );
     if (!link || !nav.getClientRects().length) {
       pill.style.opacity = "0";
       return;
@@ -419,6 +423,14 @@ function initArcCarousel() {
     cards = $$("[data-arc-card]", root),
     count = cards.length,
     controls = $("[data-arc-controls]", root);
+  let autoEnabled = true,
+    inView = false,
+    hover = false,
+    autoTimer,
+    pauseUntil = 0,
+    wheelTimer,
+    wheelStart = null;
+  const autoButton = $("[data-arc-autoplay]", root);
   let phase = 0,
     selected = 0,
     tween,
@@ -438,15 +450,15 @@ function initArcCarousel() {
         sn = Math.sin(angle),
         x = rx * sn,
         y = ry * (1 - c) - 32;
-      const scale = 0.72 + (0.28 * (c + 1)) / 2,
-        opacity = c >= 0 ? 0.72 + 0.28 * c : Math.max(0, 0.72 * (1 + c * 2));
+      const scale = 0.78 + (0.22 * (c + 1)) / 2,
+        opacity = c >= 0 ? 0.86 + 0.14 * c : Math.max(0, 0.86 * (1 + c * 2));
       card.style.transform =
         "translate3d(calc(-50% + " +
         x.toFixed(3) +
         "px),calc(-50% + " +
         y.toFixed(3) +
         "px),0) rotate(" +
-        (sn * 9).toFixed(3) +
+        (sn * 6).toFixed(3) +
         "deg) scale(" +
         scale.toFixed(4) +
         ")";
@@ -536,6 +548,8 @@ function initArcCarousel() {
   });
   stage.addEventListener("pointerdown", (event) => {
     if (!event.isPrimary || event.button !== 0) return;
+    clearTimeout(wheelTimer);
+    wheelStart = null;
     drag = {
       id: event.pointerId,
       x: event.clientX,
@@ -592,6 +606,113 @@ function initArcCarousel() {
   reducedMotion.addEventListener("change", () => {
     if (reducedMotion.matches) move(Math.round(phase), false);
   });
+
+  function schedule() {
+    clearTimeout(autoTimer);
+    if (
+      !autoEnabled ||
+      !inView ||
+      hover ||
+      root.contains(document.activeElement) ||
+      document.hidden ||
+      reducedMotion.matches
+    )
+      return;
+    autoTimer = setTimeout(
+      () => {
+        move(Math.round(phase) + 1);
+        schedule();
+      },
+      Math.max(5200, pauseUntil - performance.now()),
+    );
+  }
+  function pause() {
+    pauseUntil = performance.now() + 9000;
+    clearTimeout(autoTimer);
+    schedule();
+  }
+  root.addEventListener("pointerenter", () => {
+    hover = true;
+    schedule();
+  });
+  root.addEventListener("pointerleave", () => {
+    hover = false;
+    schedule();
+  });
+  root.addEventListener("focusin", () => clearTimeout(autoTimer));
+  root.addEventListener("focusout", () => setTimeout(schedule, 0));
+  root.addEventListener("pointerdown", pause, { passive: true });
+  root.addEventListener("keydown", pause);
+  root.addEventListener("click", pause);
+  document.addEventListener("visibilitychange", schedule);
+  if ("IntersectionObserver" in window)
+    new IntersectionObserver(
+      (entries) => {
+        inView =
+          entries[0].isIntersecting && entries[0].intersectionRatio >= 0.35;
+        schedule();
+      },
+      { threshold: 0.35 },
+    ).observe(stage);
+  autoButton?.addEventListener("click", () => {
+    autoEnabled = !autoEnabled;
+    autoButton.setAttribute("aria-pressed", String(!autoEnabled));
+    autoButton.setAttribute(
+      "aria-label",
+      autoEnabled
+        ? "Приостановить автопереключение"
+        : "Включить автопереключение",
+    );
+    $("[data-autoplay-label]", root).textContent = autoEnabled
+      ? "Пауза"
+      : "Авто";
+    $("[data-autoplay-symbol] path", root).setAttribute(
+      "d",
+      autoEnabled ? "M5 3v10M11 3v10" : "M4 2.5 13 8 4 13.5Z",
+    );
+    schedule();
+  });
+  stage.addEventListener(
+    "wheel",
+    (event) => {
+      if (event.ctrlKey) return;
+      const dx =
+        event.shiftKey && Math.abs(event.deltaX) < 1
+          ? event.deltaY
+          : event.deltaX;
+      if (
+        Math.abs(dx) < 2 ||
+        (!event.shiftKey && Math.abs(dx) <= Math.abs(event.deltaY) * 1.15)
+      )
+        return;
+      event.preventDefault();
+      pause();
+      tween?.stop();
+      if (wheelStart === null) wheelStart = phase;
+      const delta =
+        dx *
+        (event.deltaMode === 1
+          ? 16
+          : event.deltaMode === 2
+            ? stage.clientWidth
+            : 1);
+      render(phase + delta / 420);
+      clearTimeout(wheelTimer);
+      wheelTimer = setTimeout(() => {
+        let target = Math.round(phase);
+        if (
+          target === Math.round(wheelStart) &&
+          Math.abs(phase - wheelStart) > 0.08
+        )
+          target += phase > wheelStart ? 1 : -1;
+        wheelStart = null;
+        move(target);
+      }, 140);
+    },
+    { passive: false },
+  );
+  reducedMotion.addEventListener("change", schedule);
+
   resize();
   announce(0);
 }
@@ -604,10 +725,8 @@ function stablePanelHeight(container, panels, kind) {
     const min =
       kind === "album"
         ? innerWidth <= 700
-          ? 510
-          : innerWidth <= 1000
-            ? 480
-            : 550
+          ? 490
+          : 400
         : kind === "faq"
           ? innerWidth <= 700
             ? 330
@@ -617,8 +736,8 @@ function stablePanelHeight(container, panels, kind) {
           : innerWidth <= 700
             ? 0
             : innerWidth <= 1000
-              ? 610
-              : 570;
+              ? 490
+              : 470;
     let height = min;
     panels.forEach((panel) => {
       const saved = panel.getAttribute("style");
@@ -708,7 +827,7 @@ function initServiceScenes() {
       old,
       {
         opacity: 0,
-        transform: "translateX(" + -direction * 35 + "px) scale(.985)",
+        transform: "translateY(-22px) scale(.96) rotateX(5deg)",
       },
       { duration: 0.4 },
     );
@@ -716,7 +835,10 @@ function initServiceScenes() {
       incoming,
       {
         opacity: [0.4, 1],
-        transform: ["translateX(" + direction * 55 + "px)", "translateX(0)"],
+        transform: [
+          "translateY(35px) scale(.97) rotateX(-4deg)",
+          "translateY(0) scale(1) rotateX(0)",
+        ],
       },
       { duration: 0.6 },
     );
@@ -819,7 +941,12 @@ function initWorkflowAlbum() {
       animate(
         old,
         {
-          transform: "translateY(" + -direction * 85 + "px) scale(.96)",
+          transform:
+            "translateX(" +
+            -direction * 65 +
+            "px) rotateY(" +
+            -direction * 7 +
+            "deg) scale(.97)",
           opacity: 0,
         },
         { duration: 0.46 },
@@ -829,7 +956,11 @@ function initWorkflowAlbum() {
       incoming,
       {
         transform: [
-          "translateY(" + direction * 115 + "px) scale(1.025)",
+          "translateX(" +
+            direction * 95 +
+            "px) rotateY(" +
+            direction * 8 +
+            "deg) scale(.97)",
           "translateY(0) scale(1)",
         ],
         opacity: [0.35, 1],
@@ -844,13 +975,6 @@ function initWorkflowAlbum() {
           transform: ["translateY(" + direction * 18 + "px)", "translateY(0)"],
         },
         { duration: 0.65 },
-      ),
-      animate(
-        $(".album-drawing,.architectural-plan", incoming),
-        {
-          transform: ["translateY(" + direction * 35 + "px)", "translateY(0)"],
-        },
-        { duration: 0.78 },
       ),
     );
     const finish = () => {
@@ -897,194 +1021,125 @@ function initWorkflowAlbum() {
   });
   show(0, false);
 }
+// Adapted from Motion Primitives Accordion (MIT): expanded/collapsed height and opacity states.
 function initConsultationIndex() {
-  const root = $("[data-consultation]");
-  if (!root) return;
-  root.classList.add("is-enhanced");
-  const buttons = $$("[data-question]", root),
-    panel = $(".consultation-panel", root),
-    answers = $$("[data-answer]", root),
-    marker = $(".consultation-marker", root);
-  let current = -1,
-    animations = [],
-    revision = 0,
-    pill;
-  panel.classList.add("is-enhanced");
-  stablePanelHeight(panel, answers, "faq");
-  function position() {
-    const button = buttons[current];
-    if (!button) return;
-    pill?.stop();
-    const props = {
-      transform: "translateY(" + button.offsetTop + "px)",
-      height: button.offsetHeight + "px",
+  const items = $$(".faq-item");
+  const states = new WeakMap();
+  function toggle(item, open) {
+    const body = $(".faq-answer", item),
+      button = $("summary", item),
+      state = states.get(item) || {};
+    state.animation?.stop();
+    const ticket = (state.ticket || 0) + 1;
+    state.ticket = ticket;
+    states.set(item, state);
+    const from = item.open ? body.getBoundingClientRect().height : 0;
+    item.open = true;
+    body.style.height = "auto";
+    const height = body.scrollHeight;
+    button.setAttribute("aria-expanded", String(open));
+    body.inert = !open;
+    const done = () => {
+      if (states.get(item).ticket !== ticket) return;
+      item.open = open;
+      body.style.height = "";
+      body.style.opacity = "";
     };
-    pill = animate(marker, props, { duration: 0.4 });
-    if (!pill) Object.assign(marker.style, props);
-  }
-  function show(index, moving = true) {
-    if (index === current && moving) return;
-    const ticket = ++revision;
-    animations.forEach((a) => a?.stop());
-    animations = [];
-    const old = answers[current],
-      incoming = answers[index],
-      direction = index > current ? 1 : -1;
-    current = index;
-    buttons.forEach((b, i) => {
-      b.setAttribute("aria-selected", String(i === index));
-      b.tabIndex = i === index ? 0 : -1;
-    });
-    panel.setAttribute("aria-labelledby", buttons[index].id);
-    position();
-    answers.forEach((a, i) => {
-      a.classList.toggle("is-active", i === index);
-      a.classList.remove("is-leaving");
-      a.inert = i !== index;
-      a.setAttribute("aria-hidden", String(i !== index));
-      if (a !== old) clearSceneStyles(a);
-    });
-    if (!moving || !old || reducedMotion.matches) {
-      answers.forEach(clearSceneStyles);
-      return;
-    }
-    old.classList.add("is-leaving");
-    const leave = animate(
-      old,
-      { opacity: 0, transform: "translateY(" + -direction * 20 + "px)" },
-      { duration: 0.26 },
-    );
-    const enter = animate(
-      incoming,
+    state.animation = animate(
+      body,
       {
-        opacity: [0.2, 1],
-        transform: ["translateY(" + direction * 25 + "px)", "translateY(0)"],
+        height: [from + "px", (open ? height : 0) + "px"],
+        opacity: [open ? 0.3 : 1, open ? 1 : 0],
       },
-      { duration: 0.5 },
+      { duration: 0.42 },
     );
-    animations.push(
-      leave,
-      enter,
-      animate(
-        $("h3", incoming),
-        {
-          transform: ["translateX(" + direction * 12 + "px)", "translateX(0)"],
-        },
-        { duration: 0.55 },
-      ),
-    );
-    const finish = () => {
-      if (ticket !== revision) return;
-      old.classList.remove("is-leaving");
-      clearSceneStyles(old);
-      clearSceneStyles(incoming);
-    };
-    if (enter) enter.then(finish);
-    else finish();
+    if (state.animation) state.animation.then(done);
+    else done();
   }
-  buttons.forEach((b, i) => b.addEventListener("click", () => show(i)));
-  $(".consultation-index", root).addEventListener("keydown", (event) => {
-    const i = buttons.indexOf(document.activeElement);
-    if (i < 0) return;
-    const map = {
-      ArrowDown: Math.min(3, i + 1),
-      ArrowUp: Math.max(0, i - 1),
-      Home: 0,
-      End: 3,
-    };
-    if (Object.hasOwn(map, event.key)) {
-      event.preventDefault();
-      show(map[event.key]);
-      buttons[map[event.key]].focus();
-    }
+  items.forEach((item, i) => {
+    const trigger = $("summary", item),
+      body = $(".faq-answer", item);
+    body.id = "faq-response-" + i;
+    trigger.setAttribute("aria-controls", body.id);
+    trigger.setAttribute("aria-expanded", String(item.open));
+    trigger.addEventListener("click", (e) => {
+      e.preventDefault();
+      const open = trigger.getAttribute("aria-expanded") !== "true";
+      items.forEach((other) => {
+        if (other !== item && other.open) toggle(other, false);
+      });
+      toggle(item, open);
+    });
   });
-  addEventListener("resize", position);
-  document.fonts.ready.then(position);
-  reducedMotion.addEventListener("change", () => {
-    if (reducedMotion.matches) show(current, false);
-  });
-  show(0, false);
-}
-
-// Adapted from Magic UI Text Animate (MIT): word segmentation, slideUp and
-// duration/segment stagger. Vanilla Motion replaces React variants; text keeps one accessible name.
-// Source and license: assets/vendor/MAGIC-UI-LICENSE.md, THIRD-PARTY.md.
-function animateEditorialText(element, { duration = 0.7, delay = 0 } = {}) {
-  if (!element || reducedMotion.matches) return;
-  const words = (element.getAttribute("aria-label") || element.textContent)
-    .split(/(\s+)/)
-    .filter((word) => word.trim());
-  const slots = $$("[aria-hidden=true]", element);
-  const segments = words
-    .map((word, i) => {
-      const slot = slots[i];
-      if (slot) slot.textContent = word;
-      return slot;
-    })
-    .filter(Boolean);
-  segments.forEach((segment, i) =>
-    animate(
-      segment,
-      { opacity: [0.55, 1], transform: ["translateY(20px)", "translateY(0)"] },
-      {
-        duration,
-        delay: delay + i * (duration / Math.max(1, segments.length)) * 0.32,
-      },
-    ),
-  );
 }
 function initSignatureMotion(playIntro = false) {
   if (reducedMotion.matches || typeof window.Motion?.animate !== "function")
     return;
   if (playIntro && scrollY < 100 && performance.now() < 2200) {
-    animate(
-      $(".hero-line"),
-      { transform: ["scaleX(.1)", "scaleX(1)"] },
-      { duration: 0.85 },
-    );
-    animate(
-      $(".signature-portrait"),
-      {
-        clipPath: ["inset(0 0 7% 0)", "inset(0)"],
-        transform: ["translateY(18px)", "translateY(0)"],
-      },
-      { duration: 0.95, delay: 0.08 },
-    );
-    animateEditorialText($("[data-signature-text]"), {
-      duration: 0.8,
-      delay: 0.12,
-    });
-    $$(".hero-edition,.hero-introduction,.signature-actions").forEach((el, i) =>
+    $$("[data-hero-lines] span").forEach((el, i) =>
       animate(
         el,
-        {
-          opacity: [0.65, 1],
-          transform: ["translateY(12px)", "translateY(0)"],
-        },
-        { duration: 0.65, delay: 0.2 + i * 0.07 },
+        { opacity: [0.5, 1], transform: ["translateY(22px)", "translateY(0)"] },
+        { duration: 0.8, delay: i * 0.1 },
       ),
+    );
+    animate(
+      $(".hero-gallery"),
+      {
+        clipPath: ["inset(0 0 8% 0)", "inset(0)"],
+        transform: [
+          "translateY(22px) rotate(1.5deg)",
+          "translateY(0) rotate(0)",
+        ],
+      },
+      { duration: 1 },
+    );
+    animate(
+      $(".signature-actions"),
+      { transform: ["translateY(15px)", "translateY(0)"], opacity: [0.5, 1] },
+      { duration: 0.7, delay: 0.25 },
     );
   }
   if (!("IntersectionObserver" in window)) return;
-  const observer = new IntersectionObserver(
+  const io = new IntersectionObserver(
     (entries) =>
       entries.forEach(({ target, isIntersecting }) => {
         if (!isIntersecting) return;
-        animate(
-          $(".personal-portrait", target),
-          { clipPath: ["inset(0 0 10% 0)", "inset(0)"] },
-          { duration: 0.85 },
-        );
-        animate(
-          $(".personal-copy h2", target),
-          { transform: ["translateX(-20px)", "translateX(0)"] },
-          { duration: 0.8, delay: 0.08 },
-        );
-        observer.unobserve(target);
+        if (target.matches(".personal-layout")) {
+          animate(
+            $(".personal-portrait", target),
+            {
+              transform: [
+                "translateY(30px) rotate(-5deg)",
+                "translateY(0) rotate(-2deg)",
+              ],
+            },
+            { duration: 0.85 },
+          );
+          animate(
+            $(".personal-copy", target),
+            {
+              transform: ["translateX(25px)", "translateX(0)"],
+              opacity: [0.6, 1],
+            },
+            { duration: 0.75, delay: 0.1 },
+          );
+        } else
+          animate(
+            target,
+            {
+              clipPath: ["inset(0 5% 0 0)", "inset(0)"],
+              transform: ["translateY(14px)", "translateY(0)"],
+            },
+            { duration: 0.65 },
+          );
+        io.unobserve(target);
       }),
-    { threshold: 0.25 },
+    { threshold: 0.2 },
   );
-  $$("[data-personal-reveal]").forEach((el) => observer.observe(el));
+  $$(
+    ".personal-layout,.service-heading,.album-intro,.faq-intro,.contact-heading",
+  ).forEach((el) => io.observe(el));
 }
 
 function propertyCard(p) {
