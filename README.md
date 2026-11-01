@@ -152,6 +152,6 @@ CMS должна сохранять эту схему либо выдавать 
 Публикация идёт из существующей `main`; не менять CNAME, настройки GitHub Pages или DNS.
 Не использовать force push. Перед отправкой — проверка diff, синтаксиса, desktop/mobile и моков API.
 
-## Бесплатная CMS (подготовлена локально)
+## Бесплатная CMS
 
-Собственная админка `/admin/` с отдельными Supabase Auth, Database, private Storage и Edge Function. Исходники: `admin/`, `cms-config.js`, `cms-public.js`, `supabase/`. Публичный дизайн, контакты и обработчик заявок сохранены. Настройка и эксплуатация — [CMS_SETUP.md](CMS_SETUP.md). Продакшн-CMS не публиковать без отдельного утверждения владельца.
+Собственная админка `/admin/` с отдельными Supabase Auth, Database, private Storage и Edge Function. Исходники: `admin/`, `cms-config.js`, `cms-public.js`, `supabase/`. Публичный дизайн, контакты и обработчик заявок сохранены. Настройка и эксплуатация — [CMS_SETUP.md](CMS_SETUP.md). Выпуск разрешён владельцем; последующие изменения production согласовывать отдельно.
