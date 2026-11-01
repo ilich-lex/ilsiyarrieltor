@@ -84,6 +84,21 @@
       return text;
     return "Не удалось выполнить действие. Данные в форме сохранены. Обновите соединение или обратитесь к владельцу сайта.";
   }
+  function loginErrorText(error) {
+    if (error?.code === "invalid_credentials")
+      return "Неверная почта или пароль. Используйте почту аккаунта, созданного для этого кабинета.";
+    if (error?.code === "email_not_confirmed")
+      return "Почта аккаунта ещё не подтверждена. Попросите владельца сайта проверить пользователя в Supabase.";
+    if (error?.status === 429 || /rate_limit/.test(error?.code || ""))
+      return "Слишком много попыток входа. Подождите несколько минут и попробуйте снова.";
+    if (error?.status >= 500)
+      return "Сервис входа временно недоступен. Попробуйте ещё раз немного позже.";
+    if (error?.code === "email_provider_disabled")
+      return "Вход по почте отключён в настройках кабинета. Обратитесь к владельцу сайта.";
+    if (/network|fetch|timeout/i.test(error?.message || ""))
+      return "Не удалось связаться с сервисом входа. Проверьте соединение и повторите попытку.";
+    return "Не удалось войти. Попробуйте ещё раз или обратитесь к владельцу сайта.";
+  }
   function confirmAction(title, text, yes = "Подтвердить") {
     const dialog = $("[data-confirm]");
     $("[data-confirm-title]").textContent = title;
@@ -232,17 +247,11 @@
         email: event.target.email.value.trim(),
         password: event.target.password.value,
       });
-      if (error)
-        throw Error(
-          "Неверная почта или пароль. Проверьте ввод и попробуйте ещё раз.",
-        );
+      if (error) throw error;
       event.target.password.value = "";
       await boot(data.session);
     } catch (error) {
-      message(
-        "[data-login-message]",
-        error.message.startsWith("Неверная") ? error.message : errorText(error),
-      );
+      message("[data-login-message]", loginErrorText(error));
     } finally {
       button.disabled = false;
       button.textContent = "Войти";
