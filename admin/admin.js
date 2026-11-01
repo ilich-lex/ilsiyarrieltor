@@ -3,6 +3,9 @@
   const $ = (s, root = document) => root.querySelector(s);
   const $$ = (s, root = document) => [...root.querySelectorAll(s)];
   const config = window.ILSIYAR_CMS_CONFIG || {};
+  const callbackHash = new URLSearchParams(location.hash.slice(1));
+  const callbackFailed = callbackHash.has("error");
+  let recoveryMode = callbackHash.get("type") === "recovery";
   const escape = (value) =>
     String(value ?? "").replace(
       /[&<>"']/g,
@@ -195,6 +198,10 @@
     $("[data-login-view]").hidden = false;
     $("[data-admin-view]").hidden = true;
     $("[data-logout]").hidden = true;
+    $("[data-login-form]").hidden = false;
+    $("[data-reset]").hidden = false;
+    $("[data-password-form]").hidden = true;
+    $("[data-auth-title]").textContent = "Войти в кабинет";
     message("[data-login-message]", text);
     if (editor.open) editor.close();
     if (coverEditor.open) coverEditor.close();
@@ -217,7 +224,7 @@
         showLogin("У этого аккаунта нет доступа к каталогу.");
         return;
       }
-      if (recovery) {
+      if (recovery || recoveryMode) {
         $("[data-login-view]").hidden = false;
         $("[data-admin-view]").hidden = true;
         $("[data-login-form]").hidden = true;
@@ -274,7 +281,9 @@
       if (error) throw error;
       message(
         "[data-login-message]",
-        "Если почта настроена и аккаунт существует, придёт ссылка для смены пароля. Если письма нет, попросите владельца сайта восстановить доступ через Supabase.",
+        ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname)
+          ? "Если аккаунт существует, придёт письмо для смены пароля. Откройте новую ссылку на этом компьютере — кабинет пока работает локально, на телефоне она не откроется."
+          : "Если аккаунт существует, придёт ссылка для смены пароля. Если письма нет, попросите владельца сайта проверить настройки почты.",
         true,
       );
     } catch {
@@ -301,6 +310,7 @@
       });
       if (error) throw error;
       f.reset();
+      recoveryMode = false;
       history.replaceState(null, "", location.pathname);
       await client.auth.signOut();
       f.hidden = true;
@@ -333,13 +343,27 @@
   };
   $("[data-login-form] button").disabled = false;
   client.auth.onAuthStateChange((event, session) => {
-    if (event === "PASSWORD_RECOVERY") setTimeout(() => boot(session, true), 0);
-    else if (event === "SIGNED_OUT") showLogin();
+    if (event === "PASSWORD_RECOVERY") {
+      recoveryMode = true;
+      setTimeout(() => boot(session, true), 0);
+    } else if (event === "SIGNED_OUT") showLogin();
   });
   client.auth
     .getSession()
-    .then(({ data }) =>
-      boot(data.session, location.hash.includes("type=recovery")),
+    .then(({ data, error }) => {
+      if (callbackFailed || (recoveryMode && error)) {
+        history.replaceState(null, "", location.pathname);
+        showLogin(
+          "Ссылка восстановления недействительна или уже использована. Запросите новое письмо и откройте только последнюю ссылку.",
+        );
+        return;
+      }
+      return boot(data.session, recoveryMode);
+    })
+    .catch(() =>
+      showLogin(
+        "Не удалось проверить сеанс. Обновите страницу и попробуйте снова.",
+      ),
     );
   async function readAll(table) {
     const all = [];
