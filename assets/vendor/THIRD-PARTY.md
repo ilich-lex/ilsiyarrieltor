@@ -26,3 +26,9 @@ The selected-background movement and active-panel depth informed the original va
 ## Custom work
 
 Category carousel: one numeric phase produces sin/cos position, rotation, depth and scale. Pointer drag, horizontal trackpad input, autoplay scheduling and reduced-motion fallback are native JavaScript. Hero, surfaces, layouts and photography framing are project-specific CSS.
+
+## CMS libraries
+
+Supabase JS 2.112.3 is self-hosted and loaded only by `/admin/`. MIT notice: SUPABASE-LICENSE.txt. The existing Golosov implementation was studied as an architectural example; no Golosov project configuration or data is reused.
+
+JSZip 3.10.1 is lazy-loaded only when the admin exports a backup. License notice: JSZIP-LICENSE.md (MIT or GPLv3; used under MIT). Public pages load neither SDK nor ZIP runtime.

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dalcgrioqdvfwadmtfiv.supabase.co; img-src 'self' blob: https://dalcgrioqdvfwadmtfiv.supabase.co; font-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
+    />
+    <meta name="referrer" content="same-origin" />
+    <meta name="theme-color" content="#26232d" />
+    <title>Мой каталог · Ильсияр Тухватшина</title>
+    <link rel="icon" href="../assets/icons/favicon.svg" />
+    <link rel="stylesheet" href="admin.css?v=free-cms-v1" />
+    <script src="../cms-config.js?v=free-cms-v1" defer></script>
+    <script src="../assets/vendor/supabase-2.112.3.js" defer></script>
+    <script src="admin.js?v=free-cms-v1" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#workspace">К содержимому</a>
+    <header class="topbar">
+      <a class="brand" href="../"
+        ><span>ИТ</span>
+        <div>Ильсияр Тухватшина<small>Мой каталог</small></div></a
+      ><a class="site-link" href="../" target="_blank" rel="noopener"
+        >Открыть сайт
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+          style="flex-shrink: 0"
+        >
+          <path d="M6 18 18 6M6 6h12v12" /></svg></a
+      ><button data-logout hidden class="quiet">Выйти</button>
+    </header>
+    <main id="workspace">
+      <section class="login-view" data-login-view>
+        <div class="login-intro">
+          <p class="eyebrow">Личный кабинет</p>
+          <h1>Ваши объекты.<br /><em>Под вашим управлением.</em></h1>
+          <p>Фотографии, цены и публикации — всё в одном месте.</p>
+          <div class="login-signature">
+            Ильсияр Тухватшина <span>АН «Норма»</span>
+          </div>
+        </div>
+        <div class="login-card">
+          <span class="card-index">01 / Вход</span>
+          <h2 data-auth-title>Войти в кабинет</h2>
+          <form data-login-form method="post">
+            <label
+              >Электронная почта<input
+                name="email"
+                type="email"
+                autocomplete="username"
+                required
+                maxlength="254" /></label
+            ><label
+              >Пароль<input
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                minlength="8" /></label
+            ><button class="primary" type="submit" disabled>Войти</button>
+          </form>
+          <button class="text-button" data-reset>Не помню пароль</button>
+          <form data-password-form hidden>
+            <label
+              >Новый пароль<input
+                name="password"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="12" /></label
+            ><label
+              >Повторите пароль<input
+                name="confirm"
+                type="password"
+                autocomplete="new-password"
+                required
+                minlength="12" /></label
+            ><button class="primary">Сохранить пароль</button>
+          </form>
+          <p
+            class="message"
+            data-login-message
+            role="status"
+            aria-live="polite"
+          ></p>
+          <p class="fine">
+            Регистрация закрыта. Доступ есть только у владельца каталога.
+          </p>
+        </div>
+      </section>
+      <section data-admin-view hidden>
+        <div class="workspace-heading">
+          <div>
+            <p class="eyebrow">Личный кабинет</p>
+            <h1>Мой каталог</h1>
+          </div>
+          <p class="account" data-account></p>
+        </div>
+        <nav class="workspace-nav" aria-label="Разделы кабинета">
+          <button data-tab="properties" aria-current="page">Мои объекты</button
+          ><button data-tab="covers">Фото каталога</button
+          ><button data-tab="backup">Резервная копия</button>
+        </nav>
+        <p
+          class="message"
+          data-workspace-message
+          role="status"
+          aria-live="polite"
+        ></p>
+        <div data-panel="properties">
+          <div class="section-toolbar">
+            <div>
+              <h2>Мои объекты</h2>
+              <p>Черновики видны только вам.</p>
+            </div>
+            <button class="primary" data-add>
+              Добавить объект <span aria-hidden="true">+</span>
+            </button>
+          </div>
+          <div class="list-tools">
+            <label class="search"
+              >Найти объект<input
+                data-search
+                type="search"
+                placeholder="Название, город или адрес" /></label
+            ><label
+              >Показать<select data-filter>
+                <option value="all">Все объекты</option>
+                <option value="published">Опубликованные</option>
+                <option value="draft">Черновики и скрытые</option>
+                <option value="sold">Проданные</option>
+              </select></label
+            ><button class="quiet" data-reload>Обновить</button>
+          </div>
+          <div class="object-list" data-object-list aria-live="polite"></div>
+        </div>
+        <div data-panel="covers" hidden>
+          <div class="section-toolbar">
+            <div>
+              <h2>Фото каталога</h2>
+              <p>
+                Обложки категорий на главной странице. Это отдельная настройка.
+              </p>
+            </div>
+          </div>
+          <div class="cover-grid" data-cover-list></div>
+        </div>
+        <div data-panel="backup" hidden>
+          <div class="backup-layout">
+            <div>
+              <p class="eyebrow">Всё остаётся у вас</p>
+              <h2>Резервная копия</h2>
+              <p>
+                Скачайте данные и все фотографии одним архивом. В нём будут и
+                черновики — храните его в личной папке.
+              </p>
+              <button class="primary" data-export>
+                Скачать каталог и фотографии
+              </button>
+              <button class="quiet" type="button" data-clean-storage>
+                Очистить незавершённые загрузки
+              </button>
+              <p class="fine">
+                Очистка затронет только фото старше суток, которые не
+                используются ни в объектах, ни в отдельных обложках.
+              </p>
+              <p data-export-progress role="status"></p>
+            </div>
+            <aside class="info-panel">
+              <h3>Когда сохранять копию</h3>
+              <p>
+                После важных изменений и хотя бы раз в месяц. Сохраните архив
+                ещё на одном устройстве.
+              </p>
+              <p>
+                На Free нет автоматических резервных копий. После недели
+                бездействия Supabase может приостановить проект; возобновление —
+                через панель Supabase.
+              </p>
+              <p data-storage-usage></p>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </main>
+    <dialog data-editor class="editor">
+      <form data-object-form>
+        <header class="editor-heading">
+          <div>
+            <p class="eyebrow" data-editor-state>Черновик</p>
+            <h2 data-editor-title>Новый объект</h2>
+          </div>
+          <button
+            type="button"
+            class="close"
+            data-close-editor
+            aria-label="Закрыть редактор"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              aria-hidden="true"
+            >
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </header>
+        <div class="editor-body">
+          <section>
+            <h3>Об объекте</h3>
+            <label
+              >Название<input
+                name="title"
+                maxlength="180"
+                placeholder="Например, двухкомнатная квартира"
+                required
+            /></label>
+            <div class="field-grid">
+              <label
+                >Категория<select name="category">
+                  <option value="apartment">Квартира</option>
+                  <option value="house">Дом</option>
+                  <option value="land">Участок</option>
+                  <option value="commercial">Коммерческая недвижимость</option>
+                  <option value="storage">Парковка или кладовая</option>
+                </select></label
+              ><label
+                >Рынок<select name="market">
+                  <option value="secondary">
+                    Вторичный рынок / готовый объект
+                  </option>
+                  <option value="newbuild">Новостройка</option>
+                </select></label
+              ><label
+                >Тип объекта<input
+                  name="type"
+                  maxlength="80"
+                  placeholder="Квартира"
+                  required /></label
+              ><label
+                >Статус<select name="status">
+                  <option value="active">В продаже</option>
+                  <option value="reserved">Забронировано</option>
+                  <option value="sold">Продано — скрыть с сайта</option>
+                </select></label
+              >
+            </div>
+            <label
+              >Город<input
+                name="city"
+                maxlength="100"
+                placeholder="Город или населённый пункт"
+            /></label>
+            <div class="field-grid">
+              <label>Район<input name="district" maxlength="180" /></label
+              ><label
+                >Адрес для публикации<input
+                  name="address"
+                  maxlength="250"
+                  placeholder="Только то, что можно показать всем" /></label
+              ><label
+                >Цена, ₽<input
+                  name="price"
+                  type="number"
+                  min="0"
+                  max="1000000000000"
+                  step="1"
+                  inputmode="numeric"
+                  placeholder="Пусто — по запросу" /></label
+              ><label
+                >Площадь, м²<input
+                  name="area"
+                  type="number"
+                  min="0.01"
+                  max="100000000"
+                  step="0.01"
+                  inputmode="decimal" /></label
+              ><label
+                >Комнат<input
+                  name="rooms"
+                  type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
+                  inputmode="numeric" /></label
+              ><label
+                >Этаж<input
+                  name="floor"
+                  type="number"
+                  min="-10"
+                  max="300"
+                  step="1"
+                  inputmode="numeric" /></label
+              ><label
+                >Участок, соток<input
+                  name="landArea"
+                  type="number"
+                  min="0.01"
+                  max="100000000"
+                  step="0.01"
+                  inputmode="decimal"
+              /></label>
+            </div>
+            <label
+              >Описание<textarea
+                name="description"
+                rows="6"
+                maxlength="10000"
+                placeholder="Особенности объекта, планировка, что находится рядом"
+              ></textarea></label
+            ><label class="checkbox"
+              ><input type="checkbox" name="featured" />Показывать в числе
+              первых</label
+            >
+          </section>
+          <section class="photo-section">
+            <div class="section-toolbar">
+              <div>
+                <h3>Фотографии</h3>
+                <p>Первое фото — главное. До 12 фотографий.</p>
+              </div>
+              <label class="upload-button"
+                >Загрузить фото<input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+                  multiple
+                  data-photo-upload
+              /></label>
+            </div>
+            <p class="fine">
+              Фото с телефона будут уменьшены перед загрузкой; геометки и EXIF
+              не сохраняются. Если формат HEIC не открывается, выберите JPEG в
+              настройках камеры или экспортируйте фото в JPEG.
+            </p>
+            <div class="photos-grid" data-photos></div>
+            <label class="checkbox"
+              ><input name="rightsConfirmed" type="checkbox" />У меня есть право
+              публиковать этот объект и эти фотографии. В описании и на фото нет
+              персональных данных клиентов.</label
+            >
+          </section>
+          <p
+            class="message"
+            data-editor-message
+            role="status"
+            aria-live="polite"
+          ></p>
+        </div>
+        <footer class="editor-actions">
+          <div>
+            <button type="button" class="quiet" data-preview>
+              Предпросмотр</button
+            ><button type="button" class="danger" data-delete>Удалить</button>
+          </div>
+          <div>
+            <button type="button" class="quiet" data-unpublish hidden>
+              Снять с публикации</button
+            ><button type="submit" class="secondary" data-save-draft>
+              Сохранить черновик</button
+            ><button type="button" class="primary" data-publish>
+              Опубликовать
+            </button>
+          </div>
+        </footer>
+      </form>
+    </dialog>
+    <dialog data-cover-editor class="cover-editor">
+      <header class="editor-heading">
+        <div>
+          <p class="eyebrow">Фото каталога</p>
+          <h2 data-cover-title></h2>
+        </div>
+        <button class="close" data-close-cover aria-label="Закрыть">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            style="flex-shrink: 0"
+          >
+            <path d="m6 6 12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </header>
+      <div class="cover-editor-body">
+        <div class="cover-preview" data-cover-preview>
+          <img alt="Предпросмотр обложки" />
+          <div>
+            <span>Категория</span>
+            <h3 data-cover-preview-title></h3>
+          </div>
+        </div>
+        <div class="cover-options">
+          <label
+            >Как выбрать фото<select data-cover-mode>
+              <option value="auto">
+                Автоматически — из первого опубликованного объекта
+              </option>
+              <option value="property">
+                Выбрать из опубликованных объектов
+              </option>
+              <option value="upload">Отдельная фотография</option>
+            </select></label
+          ><label data-cover-property-label hidden
+            >Фото объекта<select data-cover-property></select></label
+          ><label class="upload-button" data-cover-upload-label hidden
+            >Загрузить отдельное фото<input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+              data-cover-upload /></label
+          ><label
+            >По горизонтали<input
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              data-crop-x /></label
+          ><label
+            >По вертикали<input
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              data-crop-y /></label
+          ><label
+            >Приближение<input
+              type="range"
+              min="1"
+              max="2"
+              step="0.05"
+              value="1"
+              data-crop-zoom
+          /></label>
+          <p class="fine">
+            Отдельная обложка не заменяется при публикации новых объектов. Если
+            выбранный объект скрыт или удалён, будет использовано следующее
+            разрешённое фото этой категории.
+          </p>
+          <label class="checkbox" data-cover-rights-label hidden
+            ><input type="checkbox" data-cover-rights />У меня есть право
+            публиковать это фото. На нём нет персональных данных
+            клиентов.</label
+          >
+          <p data-cover-message class="message" role="status"></p>
+          <button class="primary" data-save-cover>Сохранить обложку</button>
+        </div>
+      </div>
+    </dialog>
+    <dialog data-confirm class="confirm-dialog">
+      <h2 data-confirm-title>Подтвердите действие</h2>
+      <p data-confirm-text></p>
+      <div class="confirm-actions">
+        <button class="quiet" data-confirm-cancel>Отмена</button
+        ><button class="danger-solid" data-confirm-yes>Подтвердить</button>
+      </div>
+    </dialog>
+    <div class="toast" data-toast role="status" aria-live="polite" hidden></div>
+    <footer class="admin-footer">
+      Ильсияр Тухватшина · АН «Норма»<span>LandLab / Личный кабинет</span>
+    </footer>
+  </body>
+</html>

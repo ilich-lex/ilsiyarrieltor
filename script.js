@@ -65,7 +65,8 @@ function animate(element, keyframes, options = {}) {
 }
 function safeImage(src) {
   if (typeof src !== "string") return "";
-  // Current files live on the same origin; an authenticated CMS can publish here later.
+  if (window.IlsiyarCMS?.isSafeImage(src)) return src;
+  // Legacy static assets remain restricted to the same origin.
   try {
     const url = new URL(src, location.href);
     return url.origin === location.origin &&
@@ -80,57 +81,60 @@ function safeImage(src) {
 }
 function getCatalog() {
   if (!catalogPromise)
-    catalogPromise = fetch(SITE_CONFIG.catalogUrl, { cache: "no-cache" })
-      .then((r) => {
-        if (!r.ok) throw new Error("Catalog unavailable");
-        return r.json();
-      })
-      .then((data) => {
-        if (
-          data.schemaVersion !== 1 ||
-          !Array.isArray(data.properties) ||
-          !Array.isArray(data.reviews)
-        )
-          throw new Error("Invalid catalog");
-        const seen = new Set();
-        const properties = data.properties
-          .filter((p) => {
-            if (
-              !p ||
-              p.published !== true ||
-              !/^[a-z0-9-]{1,80}$/.test(p.id) ||
-              seen.has(p.id) ||
-              typeof p.title !== "string" ||
-              !p.title.trim() ||
-              p.title.length > 180 ||
-              !statusLabels[p.status] ||
-              typeof p.type !== "string" ||
-              typeof p.city !== "string" ||
-              p.city.length > 100
-            )
-              return false;
-            seen.add(p.id);
-            return true;
-          })
-          .map((p) => ({
-            ...p,
-            photos: (Array.isArray(p.photos) ? p.photos : [])
-              .filter((img) => img && safeImage(img.src))
-              .map((img) => ({
-                src: safeImage(img.src),
-                alt: String(img.alt || p.title),
-              })),
-          }));
-        const reviews = data.reviews.filter(
-          (r) =>
-            r &&
-            r.published === true &&
-            r.verified === true &&
-            typeof r.name === "string" &&
-            (typeof r.text === "string" || safeImage(r.image)),
-        );
-        return { properties, reviews };
+    catalogPromise = (async () => {
+      const remote = await window.IlsiyarCMS?.load();
+      if (remote) return remote;
+      const response = await fetch(SITE_CONFIG.catalogUrl, {
+        cache: "no-store",
       });
+      if (!response.ok) throw new Error("Catalog unavailable");
+      return response.json();
+    })().then((data) => {
+      if (
+        data.schemaVersion !== 1 ||
+        !Array.isArray(data.properties) ||
+        !Array.isArray(data.reviews)
+      )
+        throw new Error("Invalid catalog");
+      const seen = new Set();
+      const properties = data.properties
+        .filter((p) => {
+          if (
+            !p ||
+            p.published !== true ||
+            !/^[a-z0-9-]{1,80}$/.test(p.id) ||
+            seen.has(p.id) ||
+            typeof p.title !== "string" ||
+            !p.title.trim() ||
+            p.title.length > 180 ||
+            !statusLabels[p.status] ||
+            typeof p.type !== "string" ||
+            typeof p.city !== "string" ||
+            p.city.length > 100
+          )
+            return false;
+          seen.add(p.id);
+          return true;
+        })
+        .map((p) => ({
+          ...p,
+          photos: (Array.isArray(p.photos) ? p.photos : [])
+            .filter((img) => img && safeImage(img.src))
+            .map((img) => ({
+              src: safeImage(img.src),
+              alt: String(img.alt || p.title),
+            })),
+        }));
+      const reviews = data.reviews.filter(
+        (r) =>
+          r &&
+          r.published === true &&
+          r.verified === true &&
+          typeof r.name === "string" &&
+          (typeof r.text === "string" || safeImage(r.image)),
+      );
+      return { properties, reviews };
+    });
   return catalogPromise;
 }
 function applyConfig() {
@@ -1271,7 +1275,12 @@ function moveCategoryPill(nav, link) {
   pill._animation = animate(pill, props, { duration: 0.34 });
   if (!pill._animation) Object.assign(pill.style, props);
 }
+let refreshCatalogView = null;
 function initCatalog(properties) {
+  if (refreshCatalogView) {
+    refreshCatalogView(properties);
+    return;
+  }
   const featured = $("[data-featured]");
   if (featured) {
     const selected = [
@@ -1458,6 +1467,16 @@ function initCatalog(properties) {
       links.find((l) => l.dataset.category === category),
     ),
   );
+  refreshCatalogView = (next) => {
+    properties = next;
+    const selectedCity = filters.elements.city.value;
+    filters.elements.city.length = 1;
+    [...new Set(properties.map((p) => p.city).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, "ru"))
+      .forEach((city) => filters.elements.city.add(new Option(city, city)));
+    filters.elements.city.value = selectedCity;
+    render();
+  };
   restore();
   render();
   document.fonts.ready.then(() =>
@@ -1467,12 +1486,22 @@ function initCatalog(properties) {
     ),
   );
 }
+let propertyMissingMarkup = null;
+let renderedProperty = "";
 function initProperty(properties) {
   const target = $("[data-property-detail]");
   if (!target) return;
+  propertyMissingMarkup ??= target.innerHTML;
   const id = new URLSearchParams(location.search).get("id"),
     p = properties.find((p) => p.id === id);
-  if (!p) return;
+  if (!p) {
+    target.innerHTML = propertyMissingMarkup;
+    renderedProperty = "";
+    return;
+  }
+  const signature = JSON.stringify(p);
+  if (signature === renderedProperty) return;
+  renderedProperty = signature;
   document.title = p.title + " — " + p.city + " | Норма";
   $("link[rel=canonical]").href =
     "https://ilsiyar.ru/property.html?id=" + encodeURIComponent(p.id);
@@ -1668,7 +1697,10 @@ function initReviews(reviews) {
     );
   }
 }
+let catalogRefreshing = false;
 async function loadPublicContent() {
+  if (catalogRefreshing) return;
+  catalogRefreshing = true;
   try {
     const { properties, reviews } = await getCatalog();
     initCatalog(properties);
@@ -1689,6 +1721,14 @@ async function loadPublicContent() {
       }
     }
   } catch {
+    if (window.IlsiyarCMS?.enabled) {
+      if ($("[data-catalog-grid]")) $("[data-catalog-grid]").innerHTML = "";
+      if ($("[data-property-detail]") && propertyMissingMarkup) {
+        $("[data-property-detail]").innerHTML = propertyMissingMarkup;
+        renderedProperty = "";
+      }
+      if ($("[data-empty]")) $("[data-empty]").hidden = false;
+    }
     const empty = $("[data-empty]");
     if (empty) {
       $(".empty-copy h3", empty).textContent = "Каталог временно недоступен.";
@@ -1708,6 +1748,8 @@ async function loadPublicContent() {
         "Укажите название объекта в комментарии или свяжитесь с Ильсияр напрямую.",
       );
     }
+  } finally {
+    catalogRefreshing = false;
   }
 }
 function initIntentLinks() {
@@ -2101,4 +2143,21 @@ document.addEventListener("DOMContentLoaded", () => {
       { once: true },
     );
   loadPublicContent();
+  if (window.IlsiyarCMS?.enabled && !window.IlsiyarCMS.isPreview) {
+    const refresh = () => {
+      if (document.hidden || catalogRefreshing) return;
+      // Category images can refresh without touching a visitor's filled lead form.
+      if (document.body.dataset.page === "home") {
+        window.IlsiyarCMS.load().catch(() => {});
+        return;
+      }
+      catalogPromise = null;
+      loadPublicContent();
+    };
+    addEventListener("focus", refresh);
+    addEventListener("pageshow", (event) => {
+      if (event.persisted) refresh();
+    });
+    setInterval(refresh, 45000);
+  }
 });
