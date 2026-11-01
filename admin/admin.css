@@ -28,8 +28,8 @@ button,
 input,
 textarea,
 select {
-  font-size: 16px;
   font: inherit;
+  font-size: 16px;
 }
 button,
 a,
