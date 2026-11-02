@@ -769,50 +769,115 @@
       busy(false);
     }
   };
-  // Browser canvas decodes orientation and strips EXIF/GPS. No original is uploaded.
-  async function optimize(file) {
-    if (file.size > 35 * 1048576)
-      throw Error("Файл слишком большой. Выберите фото до 35 МБ.");
+  // Only the processed WebP is size-limited and uploaded. Canvas strips EXIF/GPS.
+  async function decodePhoto(file) {
+    const type = file.type.toLowerCase();
+    const extension = /\.(jpe?g|png|webp|avif|heic|heif)$/i.test(file.name);
     if (
-      !/^image\/(jpeg|png|webp|avif|heic|heif)$/i.test(file.type) &&
-      !/\.(heic|heif)$/i.test(file.name)
+      !/^image\/(jpeg|jpg|pjpeg|png|x-png|webp|avif|heic|heif|heic-sequence|heif-sequence)$/.test(
+        type,
+      ) &&
+      !((!type || type === "application/octet-stream") && extension)
     )
-      throw Error("Файл должен быть фотографией JPEG, PNG, WebP или AVIF.");
-    let image;
-    try {
-      image = await createImageBitmap(file, { imageOrientation: "from-image" });
-    } catch {
       throw Error(
-        "Не удалось открыть это фото. Экспортируйте его в JPEG и попробуйте снова.",
+        "Фото должно быть в формате JPEG, PNG, WebP, AVIF или поддерживаемом браузером HEIC/HEIF.",
+      );
+    if (typeof createImageBitmap === "function") {
+      try {
+        const bitmap = await createImageBitmap(file, {
+          imageOrientation: "from-image",
+        });
+        return {
+          source: bitmap,
+          width: bitmap.width,
+          height: bitmap.height,
+          close: () => bitmap.close(),
+        };
+      } catch {
+        // Some Safari versions decode a phone photo through <img>, but not ImageBitmap.
+      }
+    }
+    const source = new Image();
+    const url = URL.createObjectURL(file);
+    const close = () => {
+      source.src = "";
+      URL.revokeObjectURL(url);
+    };
+    try {
+      await new Promise((resolve, reject) => {
+        source.onload = resolve;
+        source.onerror = reject;
+        source.src = url;
+      });
+      if (!source.naturalWidth || !source.naturalHeight) throw Error();
+      return {
+        source,
+        width: source.naturalWidth,
+        height: source.naturalHeight,
+        close,
+      };
+    } catch {
+      close();
+      throw Error(
+        /heic|heif/i.test(type + " " + file.name)
+          ? "Фото HEIC/HEIF не открывается в этом браузере. Сохраните копию в JPEG или выберите другое фото."
+          : "Фото не удалось открыть: файл повреждён или формат не поддерживается браузером. Выберите другую копию в JPEG, PNG или WebP.",
       );
     }
+  }
+  async function optimize(file) {
+    const image = await decodePhoto(file);
+    const canvas = document.createElement("canvas");
     try {
-      const factor = Math.min(1, 1920 / Math.max(image.width, image.height)),
-        canvas = document.createElement("canvas");
-      canvas.width = Math.max(1, Math.round(image.width * factor));
-      canvas.height = Math.max(1, Math.round(image.height * factor));
-      canvas
-        .getContext("2d")
-        .drawImage(image, 0, 0, canvas.width, canvas.height);
-      let blob;
-      for (const quality of [0.84, 0.74, 0.64]) {
-        blob = await new Promise((r) =>
-          canvas.toBlob(r, "image/webp", quality),
-        );
-        if (blob?.size < 1500000) break;
+      const longest = Math.max(image.width, image.height);
+      let edge = Math.min(1920, longest);
+      const smallest = Math.min(640, longest);
+      while (true) {
+        const factor = edge / longest;
+        canvas.width = Math.max(1, Math.round(image.width * factor));
+        canvas.height = Math.max(1, Math.round(image.height * factor));
+        const context = canvas.getContext("2d");
+        if (!context)
+          throw Error(
+            "Фото не удалось обработать. Закройте лишние вкладки и попробуйте ещё раз.",
+          );
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = "high";
+        context.drawImage(image.source, 0, 0, canvas.width, canvas.height);
+        for (const quality of [0.86, 0.8, 0.74]) {
+          const blob = await new Promise((resolve) =>
+            canvas.toBlob(resolve, "image/webp", quality),
+          );
+          if (!blob || !blob.size)
+            throw Error(
+              "Фото не удалось обработать. Попробуйте ещё раз или откройте кабинет в другом браузере.",
+            );
+          if (blob.type !== "image/webp")
+            throw Error(
+              "Фото не удалось сохранить в WebP: этот браузер не поддерживает преобразование. Откройте кабинет в обновлённом Safari или Chrome.",
+            );
+          if (blob.size <= 1500000)
+            return {
+              blob,
+              width: canvas.width,
+              height: canvas.height,
+              bytes: blob.size,
+            };
+        }
+        if (edge === smallest) break;
+        edge = Math.max(smallest, Math.floor(edge * 0.8));
       }
-      if (!blob || blob.type !== "image/webp" || blob.size > 1500000)
-        throw Error(
-          "Слишком большое фото после обработки. Уменьшите изображение и повторите.",
-        );
-      return {
-        blob,
-        width: canvas.width,
-        height: canvas.height,
-        bytes: blob.size,
-      };
+      throw Error(
+        "Фото не удалось уменьшить автоматически. Попробуйте другую копию фотографии или другой браузер.",
+      );
+    } catch (error) {
+      if (error?.message?.startsWith("Фото")) throw error;
+      throw Error(
+        "Фото не удалось обработать. Закройте лишние вкладки и попробуйте ещё раз.",
+      );
     } finally {
       image.close();
+      canvas.width = canvas.height = 1;
     }
   }
   const pendingFiles = new Set();
@@ -835,6 +900,8 @@
       message("[data-editor-message]", "Не более 12 фотографий на объект.");
       return;
     }
+    let uploaded = 0;
+    const issues = [];
     try {
       if (!state.editing.revision) {
         const row = await save(false, true);
@@ -847,13 +914,19 @@
           `Обрабатываем и загружаем фото ${i + 1} из ${files.length}…`,
           true,
         );
-        const f = await optimize(files[i]),
-          path =
-            "properties/" +
-            state.editing.id +
-            "/" +
-            crypto.randomUUID() +
-            ".webp";
+        let f;
+        try {
+          f = await optimize(files[i]);
+        } catch (error) {
+          issues.push(`«${files[i].name.slice(0, 80)}»: ${errorText(error)}`);
+          continue;
+        }
+        const path =
+          "properties/" +
+          state.editing.id +
+          "/" +
+          crypto.randomUUID() +
+          ".webp";
         const { error } = await client.storage
           .from(config.bucket)
           .upload(path, f.blob, {
@@ -871,15 +944,22 @@
           alt: form.elements.title.value,
         });
         state.dirty = true;
+        uploaded++;
       }
       await renderPhotos();
       message(
         "[data-editor-message]",
-        "Фотографии загружены в закрытое хранилище. Сохраните объект, чтобы применить изменения.",
-        true,
+        issues.length
+          ? `Загружено ${uploaded} из ${files.length}. ${issues.join(" ")}${uploaded ? " Сохраните объект, чтобы применить загруженные фото." : ""}`
+          : "Фотографии загружены в закрытое хранилище. Сохраните объект, чтобы применить изменения.",
+        !issues.length,
       );
     } catch (error) {
-      message("[data-editor-message]", errorText(error));
+      await renderPhotos();
+      message(
+        "[data-editor-message]",
+        `${uploaded ? `Загружено ${uploaded} из ${files.length}. Эти фото сохранены в редакторе. ` : ""}${errorText(error)}`,
+      );
     } finally {
       busy(false);
     }

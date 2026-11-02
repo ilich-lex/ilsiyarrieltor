@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="admin.css?v=free-cms-v2" />
     <script src="../cms-config.js?v=free-cms-v1" defer></script>
     <script src="../assets/vendor/supabase-2.112.3.js" defer></script>
-    <script src="admin.js?v=free-cms-v1" defer></script>
+    <script src="admin.js?v=photo-upload-v3" defer></script>
   </head>
   <body>
     <a class="skip" href="#workspace">К содержимому</a>
@@ -337,15 +337,16 @@
               <label class="upload-button"
                 >Загрузить фото<input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+                  accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif"
                   multiple
                   data-photo-upload
               /></label>
             </div>
             <p class="fine">
-              Фото с телефона будут уменьшены перед загрузкой; геометки и EXIF
-              не сохраняются. Если формат HEIC не открывается, выберите JPEG в
-              настройках камеры или экспортируйте фото в JPEG.
+              Выбирайте оригиналы с телефона — фотографии уменьшатся
+              автоматически до 1920 px и сохранятся в WebP. Геометки и EXIF не
+              сохраняются. Если HEIC не открывается в браузере, выберите копию в
+              JPEG.
             </p>
             <div class="photos-grid" data-photos></div>
             <label class="checkbox"
@@ -426,7 +427,7 @@
           ><label class="upload-button" data-cover-upload-label hidden
             >Загрузить отдельное фото<input
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif"
+              accept="image/jpeg,image/png,image/webp,image/avif,image/heic,image/heif,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif"
               data-cover-upload /></label
           ><label
             >По горизонтали<input
