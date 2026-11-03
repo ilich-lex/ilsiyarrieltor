@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex,nofollow" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dalcgrioqdvfwadmtfiv.supabase.co; img-src 'self' blob: https://dalcgrioqdvfwadmtfiv.supabase.co; font-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
+      content="default-src 'self'; script-src 'self'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline'; connect-src 'self' https://dalcgrioqdvfwadmtfiv.supabase.co; img-src 'self' blob: https://dalcgrioqdvfwadmtfiv.supabase.co; font-src 'self'; base-uri 'self'; form-action 'none'; object-src 'none'"
     />
     <meta name="referrer" content="same-origin" />
     <meta name="theme-color" content="#26232d" />
@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="admin.css?v=free-cms-v2" />
     <script src="../cms-config.js?v=free-cms-v1" defer></script>
     <script src="../assets/vendor/supabase-2.112.3.js" defer></script>
-    <script src="admin.js?v=photo-upload-v3" defer></script>
+    <script src="admin.js?v=photo-upload-v4" defer></script>
   </head>
   <body>
     <a class="skip" href="#workspace">К содержимому</a>
@@ -344,9 +344,9 @@
             </div>
             <p class="fine">
               Выбирайте оригиналы с телефона — фотографии уменьшатся
-              автоматически до 1920 px и сохранятся в WebP. Геометки и EXIF не
-              сохраняются. Если HEIC не открывается в браузере, выберите копию в
-              JPEG.
+              автоматически до 1920 px и сохранятся в WebP или JPEG —
+              подходящий формат выберется сам. HEIC обрабатывается автоматически.
+              Геометки и EXIF не сохраняются.
             </p>
             <div class="photos-grid" data-photos></div>
             <label class="checkbox"

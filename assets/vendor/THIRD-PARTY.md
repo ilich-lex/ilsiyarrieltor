@@ -32,3 +32,7 @@ Category carousel: one numeric phase produces sin/cos position, rotation, depth 
 Supabase JS 2.112.3 is self-hosted and loaded only by `/admin/`. MIT notice: SUPABASE-LICENSE.txt. The existing Golosov implementation was studied as an architectural example; no Golosov project configuration or data is reused.
 
 JSZip 3.10.1 is lazy-loaded only when the admin exports a backup. License notice: JSZIP-LICENSE.md (MIT or GPLv3; used under MIT). Public pages load neither SDK nor ZIP runtime.
+
+## HEIC decoder
+
+heic-to 1.6.7, unmodified self-hosted CSP ESM build (libheif 1.23.7). Lazy-loaded only by the admin when native HEIC decoding fails; its worker runs locally. LGPL-3.0-or-later; notice: HEIC-TO-LICENSE.txt. Corresponding source and build instructions: https://github.com/hoppergee/heic-to (npm source archive: https://registry.npmjs.org/heic-to/-/heic-to-1.6.7.tgz). Public pages do not load this decoder.

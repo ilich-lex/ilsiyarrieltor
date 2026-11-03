@@ -13,7 +13,7 @@
   const mediaUrl = (path) =>
     origin + "/functions/v1/catalog-media?path=" + encodeURIComponent(path);
   const safePath = (path) =>
-    /^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.webp$/.test(
+    /^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.(webp|jpe?g)$/.test(
       path || "",
     );
   function isSafeImage(src) {

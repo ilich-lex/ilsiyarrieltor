@@ -7,7 +7,7 @@ Deno.serve(async (request: Request) => {
   if (request.method === "OPTIONS") return new Response(null, { headers: { ...headers, "Access-Control-Allow-Methods": "GET, OPTIONS" } });
   if (request.method !== "GET") return new Response(null, { status: 405, headers });
   const path = new URL(request.url).searchParams.get("path") || "";
-  if (!/^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.webp$/.test(path)) return new Response(null, { status: 404, headers });
+  if (!/^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.(webp|jpe?g)$/.test(path)) return new Response(null, { status: 404, headers });
   try {
     const permission = await fetch(base + "/rest/v1/rpc/public_media_allowed", {
       method: "POST", headers: { apikey: anonKey, Authorization: "Bearer " + anonKey, "Content-Type": "application/json" },
@@ -19,6 +19,6 @@ Deno.serve(async (request: Request) => {
       headers: { apikey: serviceKey, Authorization: "Bearer " + serviceKey }, signal: AbortSignal.timeout(10000),
     });
     if (!photo.ok) return new Response(null, { status: 404, headers });
-    return new Response(photo.body, { headers: { ...headers, "Content-Type": "image/webp" } });
+    return new Response(photo.body, { headers: { ...headers, "Content-Type": path.endsWith(".webp") ? "image/webp" : "image/jpeg" } });
   } catch { return new Response(null, { status: 503, headers }); }
 });

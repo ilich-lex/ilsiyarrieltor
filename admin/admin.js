@@ -432,7 +432,7 @@
               await scan(path);
             else if (
               entry.id &&
-              /^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.webp$/.test(
+              /^(properties\/[a-z0-9-]{1,80}|covers)\/[a-f0-9-]{36}\.(webp|jpe?g)$/.test(
                 path,
               ) &&
               !linked.has(path) &&
@@ -769,8 +769,9 @@
       busy(false);
     }
   };
-  // Only the processed WebP is size-limited and uploaded. Canvas strips EXIF/GPS.
-  async function decodePhoto(file) {
+  // Only the processed WebP/JPEG is size-limited and uploaded. Canvas strips EXIF/GPS.
+  let heicDecoder;
+  async function decodePhoto(file, converted = false) {
     const type = file.type.toLowerCase();
     const extension = /\.(jpe?g|png|webp|avif|heic|heif)$/i.test(file.name);
     if (
@@ -818,12 +819,52 @@
       };
     } catch {
       close();
+      if (!converted && /heic|heif/i.test(type + " " + file.name)) {
+        try {
+          // Self-hosted CSP build; loaded only if native HEIC decoding fails.
+          // Conversion stays on this device. No original is sent to a third party.
+          heicDecoder ||= import("../assets/vendor/heic-to-1.6.7.js").catch(
+            (error) => {
+              heicDecoder = null;
+              throw error;
+            },
+          );
+          const { heicTo } = await heicDecoder;
+          if (typeof createImageBitmap === "function") {
+            const bitmap = await heicTo({ blob: file, type: "bitmap" });
+            return {
+              source: bitmap,
+              width: bitmap.width,
+              height: bitmap.height,
+              close: () => bitmap.close(),
+            };
+          }
+          const jpeg = await heicTo({
+            blob: file, type: "image/jpeg", quality: 0.95,
+          });
+          return await decodePhoto(
+            new File([jpeg], "converted.jpg", { type: "image/jpeg" }), true,
+          );
+        } catch {
+          throw Error(
+            "Фото HEIC/HEIF не удалось прочитать автоматически. Файл может быть повреждён. Остальные фотографии продолжат загружаться; это фото можно выбрать повторно.",
+          );
+        }
+      }
       throw Error(
-        /heic|heif/i.test(type + " " + file.name)
-          ? "Фото HEIC/HEIF не открывается в этом браузере. Сохраните копию в JPEG или выберите другое фото."
-          : "Фото не удалось открыть: файл повреждён или формат не поддерживается браузером. Выберите другую копию в JPEG, PNG или WebP.",
+        "Фото не удалось открыть: файл повреждён или формат не поддерживается. Остальные фотографии продолжат загружаться.",
       );
     }
+  }
+  let preferredPhotoType = "image/webp";
+  function encodeCanvas(canvas, type, quality) {
+    return new Promise((resolve) => {
+      try {
+        canvas.toBlob(resolve, type, quality);
+      } catch {
+        resolve(null);
+      }
+    });
   }
   async function optimize(file) {
     const image = await decodePhoto(file);
@@ -843,18 +884,23 @@
           );
         context.imageSmoothingEnabled = true;
         context.imageSmoothingQuality = "high";
+        // JPEG has no alpha channel: transparent sources get a neutral background.
+        context.fillStyle = "#fff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
         context.drawImage(image.source, 0, 0, canvas.width, canvas.height);
-        for (const quality of [0.86, 0.8, 0.74]) {
-          const blob = await new Promise((resolve) =>
-            canvas.toBlob(resolve, "image/webp", quality),
-          );
-          if (!blob || !blob.size)
+        for (const quality of [0.88, 0.82, 0.76]) {
+          let blob = await encodeCanvas(canvas, preferredPhotoType, quality);
+          if (
+            preferredPhotoType === "image/webp" &&
+            (!blob?.size || blob.type !== "image/webp")
+          ) {
+            // Safari may return PNG instead of WebP. Never label those bytes .webp.
+            preferredPhotoType = "image/jpeg";
+            blob = await encodeCanvas(canvas, preferredPhotoType, quality);
+          }
+          if (!blob?.size || blob.type !== preferredPhotoType)
             throw Error(
-              "Фото не удалось обработать. Попробуйте ещё раз или откройте кабинет в другом браузере.",
-            );
-          if (blob.type !== "image/webp")
-            throw Error(
-              "Фото не удалось сохранить в WebP: этот браузер не поддерживает преобразование. Откройте кабинет в обновлённом Safari или Chrome.",
+              "Фото не удалось обработать. Попробуйте загрузить его ещё раз. Остальные фотографии сохранятся.",
             );
           if (blob.size <= 1500000)
             return {
@@ -862,13 +908,15 @@
               width: canvas.width,
               height: canvas.height,
               bytes: blob.size,
+              contentType: blob.type,
+              extension: blob.type === "image/webp" ? ".webp" : ".jpg",
             };
         }
         if (edge === smallest) break;
         edge = Math.max(smallest, Math.floor(edge * 0.8));
       }
       throw Error(
-        "Фото не удалось уменьшить автоматически. Попробуйте другую копию фотографии или другой браузер.",
+        "Фото не удалось уменьшить до 1,5 МБ автоматически. Остальные фотографии сохранятся; это фото можно выбрать повторно.",
       );
     } catch (error) {
       if (error?.message?.startsWith("Фото")) throw error;
@@ -901,7 +949,7 @@
       return;
     }
     let uploaded = 0;
-    const issues = [];
+    const issues = new Map();
     try {
       if (!state.editing.revision) {
         const row = await save(false, true);
@@ -918,7 +966,8 @@
         try {
           f = await optimize(files[i]);
         } catch (error) {
-          issues.push(`«${files[i].name.slice(0, 80)}»: ${errorText(error)}`);
+          const problem = errorText(error);
+          issues.set(problem, (issues.get(problem) || 0) + 1);
           continue;
         }
         const path =
@@ -926,11 +975,11 @@
           state.editing.id +
           "/" +
           crypto.randomUUID() +
-          ".webp";
+          f.extension;
         const { error } = await client.storage
           .from(config.bucket)
           .upload(path, f.blob, {
-            contentType: "image/webp",
+            contentType: f.contentType,
             upsert: false,
             cacheControl: "0",
           });
@@ -949,16 +998,16 @@
       await renderPhotos();
       message(
         "[data-editor-message]",
-        issues.length
-          ? `Загружено ${uploaded} из ${files.length}. ${issues.join(" ")}${uploaded ? " Сохраните объект, чтобы применить загруженные фото." : ""}`
-          : "Фотографии загружены в закрытое хранилище. Сохраните объект, чтобы применить изменения.",
-        !issues.length,
+        issues.size
+          ? `Загружено ${uploaded} из ${files.length}. Не загружено: ${files.length - uploaded}. ${[...issues].slice(0, 2).map(([text, count]) => `${count} фото — ${text}`).join(" ")}${issues.size > 2 ? " Есть и другие неподдерживаемые файлы." : ""}${uploaded ? " Сохраните объект, чтобы применить загруженные фото." : ""}`
+          : `Загружено ${uploaded} из ${files.length}. Фотографии загружены в закрытое хранилище. Сохраните объект, чтобы применить изменения.`,
+        !issues.size,
       );
     } catch (error) {
       await renderPhotos();
       message(
         "[data-editor-message]",
-        `${uploaded ? `Загружено ${uploaded} из ${files.length}. Эти фото сохранены в редакторе. ` : ""}${errorText(error)}`,
+        `Загружено ${uploaded} из ${files.length}. ${uploaded ? "Эти фото сохранены в редакторе. Сохраните объект. " : ""}Загрузка остальных остановлена. ${errorText(error)}`,
       );
     } finally {
       busy(false);
@@ -1219,16 +1268,21 @@
     const f = e.target.files[0];
     e.target.value = "";
     if (!f) return;
-    const b = $("[data-save-cover]");
-    b.disabled = true;
+    // Keep one cover upload in flight; its category/mode cannot change mid-upload.
+    const controls = $$("button,input,select", coverEditor).map((node) => [
+      node, node.disabled,
+    ]);
+    controls.forEach(([node]) => {
+      node.disabled = true;
+    });
     try {
       message("[data-cover-message]", "Уменьшаем и загружаем фото…", true);
       const image = await optimize(f),
-        path = "covers/" + crypto.randomUUID() + ".webp";
+        path = "covers/" + crypto.randomUUID() + image.extension;
       const { error } = await client.storage
         .from(config.bucket)
         .upload(path, image.blob, {
-          contentType: "image/webp",
+          contentType: image.contentType,
           upsert: false,
           cacheControl: "0",
         });
@@ -1246,7 +1300,9 @@
     } catch (e) {
       message("[data-cover-message]", errorText(e));
     } finally {
-      b.disabled = false;
+      controls.forEach(([node, disabled]) => {
+        node.disabled = disabled;
+      });
     }
   };
   $("[data-save-cover]").onclick = async () => {
