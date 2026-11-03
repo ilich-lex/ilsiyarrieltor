@@ -325,36 +325,19 @@ async def _send_to_telegram(lead: LeadPayload, lead_id: str) -> None:
 
 
 @app.post("/api/lead")
-async def create_lead(lead: LeadPayload, request: Request) -> dict:
-    lead_id = request.state.lead_id
-    if lead.website:
-        logger.info("lead_honeypot_blocked | lead_id=%s", lead_id)
-        raise _delivery_error(422, "form_check_failed")
-    if not await _claim_delivery(lead_id, lead):
-        return {"ok": True, "leadId": lead_id, "delivery": "accepted", "duplicate": True}
-    try:
-        await _check_rate_limit(_client_ip(request), _submission_key(_client_ip(request), lead))
-        logger.info("lead_validated | lead_id=%s", lead_id)
-        await _send_to_telegram(lead, lead_id)
-        await _mark_submission_success(_submission_key(_client_ip(request), lead))
-    except HTTPException as exc:
-        detail = exc.detail if isinstance(exc.detail, dict) else {}
-        await _record_outcome(lead_id, "unknown" if detail.get("delivery") == "unknown" else "failed")
-        raise
-    except asyncio.CancelledError:
-        await _record_outcome(lead_id, "unknown")
-        raise
-    except Exception as exc:
-        logger.error("lead_internal_failure | lead_id=%s | error=%s", lead_id, exc.__class__.__name__)
-        await _record_outcome(lead_id, "unknown")
-        raise _delivery_error(503, "delivery_unknown", "unknown") from None
-    await _record_outcome(lead_id, "accepted")
-    return {"ok": True, "leadId": lead_id, "delivery": "accepted", "duplicate": False}
+@app.post("/api/lead/", include_in_schema=False)
+async def create_lead():
+    # No body parameter: FastAPI does not read or validate the payload.
+    return JSONResponse(
+        status_code=503,
+        content={"ok": False, "code": "lead_intake_disabled", "delivery": "not_sent"},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 @app.get("/health", include_in_schema=False)
 async def health():
-    return {"ok": True, "version": "lead-diagnostics-v1",
+    return {"ok": True, "version": "lead-pause-v1", "intakeEnabled": False,
             "uptimeSeconds": round(time.monotonic() - _started_at)}
 
 
