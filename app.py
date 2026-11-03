@@ -186,6 +186,13 @@ def _delivery_error(status_code: int, code: str, delivery: str = "not_sent") -> 
     return HTTPException(status_code=status_code, detail={"code": code, "delivery": delivery})
 
 
+LEAD_RESPONSE_HEADERS = {
+    "Cache-Control": "no-store",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "no-referrer",
+}
+
+
 @app.middleware("http")
 async def lead_trace(request: Request, call_next):
     if request.url.path != "/api/lead" or request.method != "POST":
@@ -194,11 +201,14 @@ async def lead_trace(request: Request, call_next):
     try:
         lead_id = str(UUID(candidate)) if candidate else str(uuid4())
     except (ValueError, AttributeError):
-        return JSONResponse(status_code=400, content={"ok": False, "code": "invalid_request_id"})
+        response = JSONResponse(status_code=400, content={"ok": False, "code": "invalid_request_id"})
+        response.headers.update(LEAD_RESPONSE_HEADERS)
+        return response
     request.state.lead_id = lead_id
     started = time.monotonic()
     logger.info("lead_request_received | lead_id=%s", lead_id)
     response = await call_next(request)
+    response.headers.update(LEAD_RESPONSE_HEADERS)
     response.headers["X-Lead-ID"] = lead_id
     logger.info("lead_http_result | lead_id=%s | status=%s | duration_ms=%s",
                 lead_id, response.status_code, round((time.monotonic() - started) * 1000))
@@ -325,19 +335,36 @@ async def _send_to_telegram(lead: LeadPayload, lead_id: str) -> None:
 
 
 @app.post("/api/lead")
-@app.post("/api/lead/", include_in_schema=False)
-async def create_lead():
-    # No body parameter: FastAPI does not read or validate the payload.
-    return JSONResponse(
-        status_code=503,
-        content={"ok": False, "code": "lead_intake_disabled", "delivery": "not_sent"},
-        headers={"Cache-Control": "no-store"},
-    )
+async def create_lead(lead: LeadPayload, request: Request) -> dict:
+    lead_id = request.state.lead_id
+    if lead.website:
+        logger.info("lead_honeypot_blocked | lead_id=%s", lead_id)
+        raise _delivery_error(422, "form_check_failed")
+    if not await _claim_delivery(lead_id, lead):
+        return {"ok": True, "leadId": lead_id, "delivery": "accepted", "duplicate": True}
+    try:
+        await _check_rate_limit(_client_ip(request), _submission_key(_client_ip(request), lead))
+        logger.info("lead_validated | lead_id=%s", lead_id)
+        await _send_to_telegram(lead, lead_id)
+        await _mark_submission_success(_submission_key(_client_ip(request), lead))
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, dict) else {}
+        await _record_outcome(lead_id, "unknown" if detail.get("delivery") == "unknown" else "failed")
+        raise
+    except asyncio.CancelledError:
+        await _record_outcome(lead_id, "unknown")
+        raise
+    except Exception as exc:
+        logger.error("lead_internal_failure | lead_id=%s | error=%s", lead_id, exc.__class__.__name__)
+        await _record_outcome(lead_id, "unknown")
+        raise _delivery_error(503, "delivery_unknown", "unknown") from None
+    await _record_outcome(lead_id, "accepted")
+    return {"ok": True, "leadId": lead_id, "delivery": "accepted", "duplicate": False}
 
 
 @app.get("/health", include_in_schema=False)
 async def health():
-    return {"ok": True, "version": "lead-pause-v1", "intakeEnabled": False,
+    return {"ok": True, "version": "lead-restored-v1", "intakeEnabled": True,
             "uptimeSeconds": round(time.monotonic() - _started_at)}
 
 
