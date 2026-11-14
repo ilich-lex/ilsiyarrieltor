@@ -436,7 +436,6 @@ function initArcCarousel() {
     wheelStart = null;
   const autoButton = $("[data-arc-autoplay]", root);
   let phase = 0,
-    selected = 0,
     tween,
     drag = null,
     frame,
@@ -475,7 +474,6 @@ function initArcCarousel() {
     });
   }
   function announce(index) {
-    selected = index;
     cards.forEach((card, i) => {
       card.classList.toggle("is-active", i === index);
       card.tabIndex = i === index ? 0 : -1;
@@ -510,11 +508,6 @@ function initArcCarousel() {
     }
     tween = numberTween(phase, target, render, 0.85);
   }
-  function select(index) {
-    const round = Math.round(phase),
-      delta = mod(index - mod(round) + count / 2) - count / 2;
-    move(round + delta);
-  }
   function resize() {
     rx =
       stage.clientWidth <= 700
@@ -530,15 +523,11 @@ function initArcCarousel() {
     move(Math.round(phase) + 1),
   );
   stage.addEventListener("click", (event) => {
-    const card = event.target.closest("[data-arc-card]");
-    if (!card || event.metaKey || event.ctrlKey || event.shiftKey) return;
-    event.preventDefault();
-    if (performance.now() < skipClickUntil) return;
-    const i = cards.indexOf(card);
-    if (i === selected) openCategoryInquiry(card.dataset.categoryKey);
-    else select(i);
+    if (event.detail > 0 && performance.now() < skipClickUntil)
+      event.preventDefault();
   });
   root.addEventListener("keydown", (event) => {
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
     const map = {
       ArrowLeft: Math.round(phase) - 1,
       ArrowRight: Math.round(phase) + 1,
@@ -547,7 +536,10 @@ function initArcCarousel() {
     };
     if (Object.hasOwn(map, event.key)) {
       event.preventDefault();
-      move(map[event.key]);
+      const target = map[event.key];
+      move(target);
+      if (event.target.closest("[data-arc-card]"))
+        cards[mod(target)].focus({ preventScroll: true });
     }
   });
   stage.addEventListener("pointerdown", (event) => {
