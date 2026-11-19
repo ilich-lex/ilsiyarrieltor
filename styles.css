@@ -871,6 +871,47 @@ textarea {
 .catalog-heading {
   margin-bottom: 36px;
 }
+.pdf-catalog-shortcut {
+  margin: -12px 0 24px;
+}
+.pdf-catalogs {
+  margin-top: clamp(48px, 7vw, 88px);
+  padding-top: clamp(24px, 4vw, 42px);
+  border-top: 1px solid var(--line);
+  scroll-margin-top: 110px;
+}
+.pdf-catalogs h2 {
+  font: 400 clamp(38px, 4.5vw, 64px)/1.05 "Cormorant Garamond", serif;
+  letter-spacing: -0.025em;
+}
+.pdf-catalog-note {
+  max-width: 62ch;
+  margin: 12px 0 24px;
+  color: var(--muted);
+}
+.pdf-catalog-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.pdf-catalog-card .pdf-catalog-cover {
+  display: block;
+  width: 100%;
+  height: auto;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--line);
+  transform: none;
+}
+.pdf-catalog-card .property-location {
+  margin-bottom: 22px;
+}
+.pdf-catalog-card .button {
+  align-self: flex-start;
+  margin-top: auto;
+  min-height: 48px;
+  padding: 12px 16px;
+  gap: 12px;
+}
 .catalog-filters {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr auto;
